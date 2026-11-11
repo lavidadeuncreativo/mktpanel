@@ -146,6 +146,9 @@ export function Dashboard() {
   const followersDelta = formatDeltaPct(totals.followers, prevFollowers);
   const commentsDelta = formatDeltaPct(totals.comments, prevComments);
   const hasSnapshots = ws.snapshots.length > 0;
+  // A second capture exists for at least one network: the bars already
+  // show a trend, so the "registra una segunda captura" hint must hide.
+  const hasSecondCapture = Object.values(previous).some((p) => p !== null);
   const lastCaptureDate =
     hasSnapshots
       ? [...ws.snapshots].sort((a, b) => b.date.localeCompare(a.date))[0].date
@@ -358,10 +361,12 @@ export function Dashboard() {
           {hasSnapshots ? (
             <>
               <ViewsBars snapshots={overviewSnapshots} />
-              <p className="text-[13px] text-muted-fg">
-                Línea base: registra una segunda captura (o sincroniza con
-                Meta en Conexiones) para ver la tendencia.
-              </p>
+              {!hasSecondCapture ? (
+                <p className="text-[13px] text-muted-fg">
+                  Línea base: registra una segunda captura (o sincroniza con
+                  Meta en Conexiones) para ver la tendencia.
+                </p>
+              ) : null}
             </>
           ) : (
             <div className="pt-4">

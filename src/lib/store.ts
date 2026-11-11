@@ -1,13 +1,32 @@
-import { emptyWorkspace, seedEvym } from "./seed";
-import type { PanelData, WorkspaceId } from "./types";
+import {
+  ANTOJO_FB_SNAPSHOT_2026_11_11,
+  ANTOJO_IG_SNAPSHOT_2026_11_11,
+  ANTOJO_LOG_2026_11_11,
+  EVYM_LOG_2026_11_11,
+  FB_SNAPSHOT_2026_11_11,
+  IG_SNAPSHOT_2026_11_11,
+  PERSONAL_IG_SNAPSHOT_2026_11_11,
+  PERSONAL_LOG_2026_11_11,
+  REEL_VIEWS_2026_11_11,
+  seedAntojo,
+  seedEvym,
+  seedPersonal,
+} from "./seed";
+import type {
+  LogEntry,
+  MetricSnapshot,
+  PanelData,
+  WorkspaceData,
+  WorkspaceId,
+} from "./types";
 
 export const STORAGE_KEY = "panel-evym-v1";
 
 export function buildSeedData(): PanelData {
   return {
     evym: seedEvym(),
-    antojo: emptyWorkspace(),
-    personal: emptyWorkspace(),
+    antojo: seedAntojo(),
+    personal: seedPersonal(),
   };
 }
 
@@ -63,8 +82,106 @@ function emitPanelData() {
   for (const listener of listeners) listener();
 }
 
+/**
+ * One-shot migration for stored payloads that still carry the old 10 nov
+ * seed (e.g. a browser that loaded the panel before the 11 nov live
+ * captures landed). Pure and idempotent: it appends any missing 11 nov
+ * snapshot/log entry (matched by id), and updates the two published Reels'
+ * Views ONLY when they still hold their old seed values (Pascualita 281,
+ * Salamanca null) — a real edit the user made is never overwritten.
+ * Returns the same reference when nothing changed.
+ */
+export function migratePanelData(data: PanelData): PanelData {
+  let next = data;
+  let changed = false;
+
+  const migrateWorkspace = (
+    ws: WorkspaceData,
+    snapshots: MetricSnapshot[],
+    logEntries: LogEntry[],
+  ): WorkspaceData => {
+    const missingSnaps = snapshots.filter(
+      (s) => !ws.snapshots.some((x) => x.id === s.id),
+    );
+    const missingLogs = logEntries.filter(
+      (l) => !ws.log.some((x) => x.id === l.id),
+    );
+    if (missingSnaps.length === 0 && missingLogs.length === 0) return ws;
+    return {
+      ...ws,
+      snapshots: [...ws.snapshots, ...missingSnaps],
+      log: [...ws.log, ...missingLogs],
+    };
+  };
+
+  const apply = (id: WorkspaceId, ws: WorkspaceData) => {
+    if (ws !== next[id]) {
+      if (!changed) {
+        next = { ...next };
+        changed = true;
+      }
+      next[id] = ws;
+    }
+  };
+
+  // EVYM: 11 nov snapshots + log, then the two Reel Views (guarded).
+  let evym = migrateWorkspace(data.evym, [FB_SNAPSHOT_2026_11_11, IG_SNAPSHOT_2026_11_11], EVYM_LOG_2026_11_11);
+  const migratedContent = evym.content.map((item) => {
+    if (
+      item.id === "seed-reel-pascualita" &&
+      item.views === 281 &&
+      REEL_VIEWS_2026_11_11[item.id] !== undefined
+    ) {
+      return { ...item, views: REEL_VIEWS_2026_11_11[item.id] };
+    }
+    if (
+      item.id === "seed-reel-salamanca" &&
+      item.views === null &&
+      REEL_VIEWS_2026_11_11[item.id] !== undefined
+    ) {
+      return { ...item, views: REEL_VIEWS_2026_11_11[item.id] };
+    }
+    return item;
+  });
+  if (migratedContent.some((item, i) => item !== evym.content[i])) {
+    evym = { ...evym, content: migratedContent };
+  }
+  apply("evym", evym);
+
+  // Antojo: 11 nov snapshots + log.
+  apply(
+    "antojo",
+    migrateWorkspace(
+      data.antojo,
+      [ANTOJO_FB_SNAPSHOT_2026_11_11, ANTOJO_IG_SNAPSHOT_2026_11_11],
+      ANTOJO_LOG_2026_11_11,
+    ),
+  );
+
+  // Personal: 11 nov Instagram snapshot + log.
+  apply(
+    "personal",
+    migrateWorkspace(
+      data.personal,
+      [PERSONAL_IG_SNAPSHOT_2026_11_11],
+      PERSONAL_LOG_2026_11_11,
+    ),
+  );
+
+  return next;
+}
+
 export function getPanelData(): PanelData {
-  if (!cache) cache = loadStoredData() ?? buildSeedData();
+  if (!cache) {
+    const stored = loadStoredData();
+    if (stored) {
+      const migrated = migratePanelData(stored);
+      cache = migrated;
+      if (migrated !== stored) saveStoredData(migrated);
+    } else {
+      cache = buildSeedData();
+    }
+  }
   return cache;
 }
 

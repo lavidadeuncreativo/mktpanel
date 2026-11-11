@@ -105,7 +105,7 @@ export const WORKSPACES: WorkspaceMeta[] = [
     id: "antojo",
     name: "Antojo",
     short: "Antojo",
-    description: "Contenido y ventas de Antojo",
+    description: "Bebidas frías para eventos · latas personalizadas y catering",
   },
   {
     id: "personal",
