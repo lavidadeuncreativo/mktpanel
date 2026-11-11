@@ -70,10 +70,13 @@ h2 {
   .glass {
     @apply border-line/70 bg-white/70 backdrop-blur-xl;
   }
-  /* La superficie estándar del dashboard: blanca sólida, borde fino y
-     sombra mínima. Denso pero refinado, como un panel analítico. */
+  /* La superficie estándar del dashboard: blanca sólida y borde fino a
+     plena opacidad. El borde —no la sombra— define la tarjeta: una
+     sombra suave idéntica bajo cada tarjeta es la señal del kit SaaS
+     genérico. La sombra queda solo donde hay elevación real
+     (desplegables, diálogos). */
   .surface {
-    @apply rounded-[14px] border border-line/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)];
+    @apply rounded-[12px] border border-line bg-white;
   }
 }
 
@@ -102,6 +105,12 @@ h2 {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
   }
+}
+
+/* Las cifras de las gráficas no bailan al cambiar: cifras tabulares
+   en todo el texto SVG de Recharts. */
+.recharts-wrapper text {
+  font-variant-numeric: tabular-nums;
 }
 
 /* Thin, quiet scrollbars for horizontal strips */

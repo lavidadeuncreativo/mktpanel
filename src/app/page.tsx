@@ -64,7 +64,7 @@ function Shell() {
             <Screen />
           </div>
         </main>
-        <footer className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-line/80 bg-white px-4 py-2.5 sm:px-6 lg:px-8">
+        <footer className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-line bg-white px-4 py-2.5 sm:px-6 lg:px-8">
           <p className="text-xs text-muted-fg">
             Panel EVYM — tus datos se guardan solo en este navegador
             (localStorage). Nada sale de aquí.

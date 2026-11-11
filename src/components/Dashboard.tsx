@@ -114,7 +114,8 @@ function KpiCard({
   delta,
   spark,
   sparkColor,
-  footnote,
+  breakdown,
+  emptyNote,
 }: {
   icon: React.ReactNode;
   label: string;
@@ -123,7 +124,11 @@ function KpiCard({
   delta: { text: string; positive: boolean } | null;
   spark: { date: string; value: number }[];
   sparkColor: string;
-  footnote: string;
+  /** Desglose del total, una fila por red o por concepto: la etiqueta
+     en gris a la izquierda y la cifra tabular en tinta a la derecha.
+     Nada de cadenas unidas con puntos medios. */
+  breakdown: { label: string; value: string }[];
+  emptyNote: string;
 }) {
   return (
     <div className="surface flex flex-col p-5">
@@ -145,7 +150,7 @@ function KpiCard({
           <Pill tone="neutral">Línea base</Pill>
         )}
       </div>
-      <p className="mt-3 text-[30px] leading-none font-semibold tracking-[-0.02em] text-ink">
+      <p className="mt-3 text-[30px] leading-none font-semibold tracking-[-0.02em] tabular-nums text-ink">
         {value}
       </p>
       <div className="mt-3">
@@ -153,11 +158,29 @@ function KpiCard({
           <Sparkline data={spark} color={sparkColor} />
         ) : (
           <p className="flex h-10 items-center text-xs leading-snug text-muted-fg">
-            {footnote}
+            {breakdown.length > 0
+              ? "Sin tendencia todavía: falta una segunda captura."
+              : emptyNote}
           </p>
         )}
       </div>
-      <p className="mt-2 text-xs text-muted-fg">{footnote}</p>
+      {breakdown.length > 0 ? (
+        <div className="mt-2 space-y-0.5">
+          {breakdown.map((row) => (
+            <p
+              key={row.label}
+              className="flex items-baseline justify-between gap-2 text-xs"
+            >
+              <span className="text-muted-fg">{row.label}</span>
+              <span className="font-medium tabular-nums text-ink">
+                {row.value}
+              </span>
+            </p>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-2 text-xs text-muted-fg">{emptyNote}</p>
+      )}
     </div>
   );
 }
@@ -272,16 +295,15 @@ export function Dashboard() {
           delta={viewsDelta}
           spark={viewsSeries}
           sparkColor="#0071e3"
-          footnote={
+          breakdown={
             hasData
-              ? totals.networksWithData
-                  .map(
-                    (n) =>
-                      `${NETWORK_LABELS[n]} ${formatNumber(latest[n]?.views ?? 0)}`,
-                  )
-                  .join(" · ")
-              : "Sin capturas todavía"
+              ? totals.networksWithData.map((n) => ({
+                  label: NETWORK_LABELS[n],
+                  value: formatNumber(latest[n]?.views ?? 0),
+                }))
+              : []
           }
+          emptyNote="Sin capturas todavía"
         />
         <KpiCard
           icon={<Users className="h-4 w-4" aria-hidden="true" />}
@@ -289,17 +311,16 @@ export function Dashboard() {
           value={formatNumber(totals.followers)}
           delta={followersDelta}
           spark={followersSeries}
-          sparkColor="#34c759"
-          footnote={
+          sparkColor="#1d1d1f"
+          breakdown={
             hasData
-              ? totals.networksWithData
-                  .map(
-                    (n) =>
-                      `${NETWORK_LABELS[n]} ${formatNumber(latest[n]?.followers ?? 0)}`,
-                  )
-                  .join(" · ")
-              : "Sin capturas todavía"
+              ? totals.networksWithData.map((n) => ({
+                  label: NETWORK_LABELS[n],
+                  value: formatNumber(latest[n]?.followers ?? 0),
+                }))
+              : []
           }
+          emptyNote="Sin capturas todavía"
         />
         <KpiCard
           icon={<MessageSquare className="h-4 w-4" aria-hidden="true" />}
@@ -307,12 +328,22 @@ export function Dashboard() {
           value={formatNumber(totals.comments)}
           delta={commentsDelta}
           spark={commentsSeries}
-          sparkColor="#af52de"
-          footnote={
+          sparkColor="#1d1d1f"
+          breakdown={
             hasData
-              ? `${formatNumber(totals.reactions)} reacciones · ${formatNumber(totals.shares)} compartidos`
-              : "Sin capturas todavía"
+              ? [
+                  {
+                    label: "Reacciones",
+                    value: formatNumber(totals.reactions),
+                  },
+                  {
+                    label: "Compartidos",
+                    value: formatNumber(totals.shares),
+                  },
+                ]
+              : []
           }
+          emptyNote="Sin capturas todavía"
         />
         <div className="surface flex flex-col p-5">
           <div className="flex items-start justify-between gap-2">
@@ -326,7 +357,7 @@ export function Dashboard() {
               {streakCount > 0 ? "Activa" : "Sin racha"}
             </Pill>
           </div>
-          <p className="mt-3 text-[30px] leading-none font-semibold tracking-[-0.02em] text-ink">
+          <p className="mt-3 text-[30px] leading-none font-semibold tracking-[-0.02em] tabular-nums text-ink">
             {streakCount}{" "}
             <span className="text-lg font-medium text-muted-fg">
               {streakCount === 1 ? "día" : "días"}
@@ -433,10 +464,10 @@ export function Dashboard() {
                     <span className="flex-1 text-ink">
                       {NETWORK_LABELS[s.network]}
                     </span>
-                    <span className="text-muted-fg">
+                    <span className="text-muted-fg tabular-nums">
                       {formatNumber(s.views)}
                     </span>
-                    <span className="w-12 text-right font-semibold text-ink">
+                    <span className="w-12 text-right font-semibold tabular-nums text-ink">
                       {s.pct.toFixed(0)}%
                     </span>
                   </li>
@@ -476,7 +507,7 @@ export function Dashboard() {
                   ? `Publicado el ${formatDateShort(reel.publishDate)}`
                   : "Sin fecha de publicación"}
                 {reel.views !== null
-                  ? ` · ${formatNumber(reel.views)} reproducciones`
+                  ? `, ${formatNumber(reel.views)} reproducciones`
                   : ""}
               </p>
               <div className="mt-4 flex flex-1 flex-col justify-end">

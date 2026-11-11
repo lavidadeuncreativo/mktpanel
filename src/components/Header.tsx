@@ -38,7 +38,7 @@ function searchWorkspace(
       hits.push({
         key: `content-${c.id}`,
         label: c.title,
-        sub: "Reel · Contenido",
+        sub: "Contenido",
         screen: "contenido",
         icon: <Clapperboard className="h-4 w-4" aria-hidden="true" />,
       });
@@ -52,7 +52,7 @@ function searchWorkspace(
       hits.push({
         key: `idea-${i.id}`,
         label: i.title,
-        sub: `Idea · ${i.score} de 10`,
+        sub: `${i.score} de 10`,
         screen: "ideas",
         icon: <Lightbulb className="h-4 w-4" aria-hidden="true" />,
       });
@@ -66,7 +66,7 @@ function searchWorkspace(
       hits.push({
         key: `anecdote-${a.id}`,
         label: a.title,
-        sub: `Anécdota · ${a.name}`,
+        sub: a.name,
         screen: "giveaway",
         icon: <Gift className="h-4 w-4" aria-hidden="true" />,
       });
@@ -127,7 +127,7 @@ export function Header() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 shrink-0 border-b border-line/80 bg-white/90 backdrop-blur-xl">
+    <header className="sticky top-0 z-30 shrink-0 border-b border-line bg-white/90 backdrop-blur-xl">
       <div className="flex min-h-14 items-center gap-3 px-4 sm:px-6 lg:px-8">
         <h1 className="text-[17px] font-semibold tracking-[-0.01em] whitespace-nowrap text-ink">
           {SCREEN_TITLES[screen]}
@@ -153,7 +153,7 @@ export function Header() {
             />
           </div>
           {open && query.trim().length >= 2 ? (
-            <div className="absolute inset-x-0 top-12 overflow-hidden rounded-[16px] border border-line/80 bg-white shadow-[0_12px_32px_rgba(0,0,0,0.12)]">
+            <div className="absolute inset-x-0 top-12 overflow-hidden rounded-[12px] border border-line bg-white shadow-[0_12px_32px_rgba(0,0,0,0.12)]">
               {results.length === 0 ? (
                 <p className="px-4 py-3.5 text-sm text-muted-fg">
                   Sin resultados para “{query.trim()}” en este espacio.
@@ -220,7 +220,7 @@ export function MobileNav() {
   ];
 
   return (
-    <div className="shrink-0 border-b border-line/80 bg-white lg:hidden">
+    <div className="shrink-0 border-b border-line bg-white lg:hidden">
       <div className="scroll-thin flex items-center gap-1 overflow-x-auto px-3 py-2">
         {items.map((item) => {
           const active = screen === item.id;

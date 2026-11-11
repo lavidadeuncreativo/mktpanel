@@ -36,7 +36,7 @@ export function WeekPlan({
             divider={i > 0}
             title={
               isToday
-                ? `${WEEK_DAYS[dayIndex]} · Hoy`
+                ? `Hoy, ${WEEK_DAYS[dayIndex].toLowerCase()}`
                 : WEEK_DAYS[dayIndex]
             }
             titleClassName={isToday ? "font-semibold text-primary" : undefined}

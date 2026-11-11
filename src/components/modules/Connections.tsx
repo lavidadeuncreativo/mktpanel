@@ -289,11 +289,11 @@ export function Connections() {
             </span>
             <div>
               <h2 className="text-base font-semibold tracking-[-0.01em] text-ink">
-                Meta · Facebook + Instagram
+                Meta, Facebook e Instagram
               </h2>
               <p className="text-sm text-muted-fg">
                 {conn
-                  ? `${conn.pageName}${conn.igUsername ? ` · @${conn.igUsername}` : " · sin Instagram vinculada"}`
+                  ? `${conn.pageName}${conn.igUsername ? `, @${conn.igUsername}` : ", sin Instagram vinculada"}`
                   : "Sin conectar"}
               </p>
             </div>
@@ -545,7 +545,7 @@ export function Connections() {
           <li>
             En la app, abre{" "}
             <span className="font-medium text-ink">
-              Herramientas → Explorador de la API Graph
+              Herramientas › Explorador de la API Graph
             </span>
             , elige tu app y pulsa “Generar token de acceso”.
           </li>

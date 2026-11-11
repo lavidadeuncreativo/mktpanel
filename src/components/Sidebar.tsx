@@ -54,7 +54,7 @@ export function Sidebar() {
   );
 
   return (
-    <aside className="hidden w-60 shrink-0 flex-col border-r border-line/80 bg-white lg:flex">
+    <aside className="hidden w-60 shrink-0 flex-col border-r border-line bg-white lg:flex">
       {/* Marca */}
       <div className="flex items-center gap-2.5 px-5 pt-5 pb-4">
         <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-ink text-[13px] font-bold text-white">
@@ -70,7 +70,7 @@ export function Sidebar() {
 
       {/* Navegación */}
       <nav aria-label="Secciones del panel" className="flex-1 px-3 pt-1">
-        <p className="px-3 pb-1.5 text-[11px] font-semibold tracking-wide text-muted-fg uppercase">
+        <p className="px-3 pb-1.5 text-xs font-medium text-muted-fg">
           Panel
         </p>
         <ul className="space-y-0.5">
@@ -83,12 +83,18 @@ export function Sidebar() {
                   onClick={() => openScreen(item.id)}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "flex min-h-10 w-full cursor-pointer items-center gap-3 rounded-lg px-3 text-[14px] transition-colors duration-150",
+                    "relative flex min-h-10 w-full cursor-pointer items-center gap-3 rounded-lg px-3 text-[14px] transition-colors duration-150",
                     active
                       ? "bg-black/[0.05] font-semibold text-ink"
                       : "font-medium text-[#48484a] hover:bg-black/[0.03] hover:text-ink",
                   )}
                 >
+                  {active ? (
+                    <span
+                      className="absolute top-1/2 left-0 h-5 w-[3px] -translate-y-1/2 rounded-full bg-primary"
+                      aria-hidden="true"
+                    />
+                  ) : null}
                   <span
                     className={cn("shrink-0", active ? "text-ink" : "text-muted-fg")}
                     aria-hidden="true"
@@ -104,8 +110,8 @@ export function Sidebar() {
       </nav>
 
       {/* Selector de espacio, abajo */}
-      <div className="border-t border-line/80 px-3 py-4">
-        <p className="px-3 pb-1.5 text-[11px] font-semibold tracking-wide text-muted-fg uppercase">
+      <div className="border-t border-line px-3 py-4">
+        <p className="px-3 pb-1.5 text-xs font-medium text-muted-fg">
           Espacios
         </p>
         <ul className="space-y-0.5">

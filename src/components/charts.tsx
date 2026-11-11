@@ -27,12 +27,13 @@ export const NETWORK_COLORS: Record<Network, string> = {
 
 const SERIES_COLORS = NETWORK_COLORS;
 
-const GRID_STROKE = "#d2d2d7";
+const GRID_STROKE = "#e8e8ed";
 const TICK_FILL = "#6e6e73";
 
 const TOOLTIP_STYLE = {
-  borderRadius: 12,
+  borderRadius: 10,
   border: "1px solid #d2d2d7",
+  boxShadow: "0 8px 24px rgba(16,24,40,0.12)",
   fontSize: 13,
 } as const;
 
@@ -62,41 +63,18 @@ export function FollowersArea({
     <div className="h-64 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-          <defs>
-            {networks.map((net) => (
-              <linearGradient
-                key={net}
-                id={`area-${net}`}
-                x1="0"
-                y1="0"
-                x2="0"
-                y2="1"
-              >
-                <stop
-                  offset="0%"
-                  stopColor={SERIES_COLORS[net]}
-                  stopOpacity={0.18}
-                />
-                <stop
-                  offset="100%"
-                  stopColor={SERIES_COLORS[net]}
-                  stopOpacity={0.02}
-                />
-              </linearGradient>
-            ))}
-          </defs>
           <CartesianGrid stroke={GRID_STROKE} vertical={false} />
           <XAxis
             dataKey="date"
             tickFormatter={(d: string) => formatDateShort(d)}
-            tick={{ fill: TICK_FILL, fontSize: 12 }}
+            tick={{ fill: TICK_FILL, fontSize: 11 }}
             axisLine={false}
             tickLine={false}
           />
           <YAxis
             domain={[0, "auto"]}
             allowDecimals={false}
-            tick={{ fill: TICK_FILL, fontSize: 12 }}
+            tick={{ fill: TICK_FILL, fontSize: 11 }}
             axisLine={false}
             tickLine={false}
             width={40}
@@ -122,7 +100,8 @@ export function FollowersArea({
               dataKey={net}
               stroke={SERIES_COLORS[net]}
               strokeWidth={2}
-              fill={`url(#area-${net})`}
+              fill={SERIES_COLORS[net]}
+              fillOpacity={0.05}
               dot={{ r: 4, fill: SERIES_COLORS[net], strokeWidth: 0 }}
               activeDot={{ r: 5 }}
               connectNulls
@@ -192,7 +171,7 @@ export function ViewsBars({
           <CartesianGrid stroke={GRID_STROKE} vertical={false} />
           <XAxis
             dataKey="label"
-            tick={{ fill: TICK_FILL, fontSize: 12 }}
+            tick={{ fill: TICK_FILL, fontSize: 11 }}
             axisLine={false}
             tickLine={false}
             interval={0}
@@ -203,7 +182,7 @@ export function ViewsBars({
           <YAxis
             domain={[0, "auto"]}
             allowDecimals={false}
-            tick={{ fill: TICK_FILL, fontSize: 12 }}
+            tick={{ fill: TICK_FILL, fontSize: 11 }}
             axisLine={false}
             tickLine={false}
             width={48}
@@ -212,7 +191,7 @@ export function ViewsBars({
             formatter={(value) => [formatNumber(Number(value)), "Vistas"]}
             contentStyle={TOOLTIP_STYLE}
           />
-          <Bar dataKey="views" fill="#0071e3" radius={[6, 6, 0, 0]} />
+          <Bar dataKey="views" fill="#0071e3" radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -234,18 +213,12 @@ export function Sparkline({
     <div className="h-10 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 2, right: 0, left: 0, bottom: 0 }}>
-          <defs>
-            <linearGradient id={`spark-${color.replace("#", "")}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={color} stopOpacity={0.25} />
-              <stop offset="100%" stopColor={color} stopOpacity={0.02} />
-            </linearGradient>
-          </defs>
           <Area
             type="monotone"
             dataKey="value"
             stroke={color}
-            strokeWidth={1.75}
-            fill={`url(#spark-${color.replace("#", "")})`}
+            strokeWidth={2}
+            fill="none"
             dot={false}
             isAnimationActive={false}
           />
@@ -285,41 +258,18 @@ export function ViewsLine({
     <div className="h-64 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={series} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-          <defs>
-            {networks.map((net) => (
-              <linearGradient
-                key={net}
-                id={`line-${net}`}
-                x1="0"
-                y1="0"
-                x2="0"
-                y2="1"
-              >
-                <stop
-                  offset="0%"
-                  stopColor={SERIES_COLORS[net]}
-                  stopOpacity={0.16}
-                />
-                <stop
-                  offset="100%"
-                  stopColor={SERIES_COLORS[net]}
-                  stopOpacity={0.02}
-                />
-              </linearGradient>
-            ))}
-          </defs>
           <CartesianGrid stroke={GRID_STROKE} vertical={false} />
           <XAxis
             dataKey="date"
             tickFormatter={(d: string) => formatDateShort(d)}
-            tick={{ fill: TICK_FILL, fontSize: 12 }}
+            tick={{ fill: TICK_FILL, fontSize: 11 }}
             axisLine={false}
             tickLine={false}
           />
           <YAxis
             domain={[0, "auto"]}
             allowDecimals={false}
-            tick={{ fill: TICK_FILL, fontSize: 12 }}
+            tick={{ fill: TICK_FILL, fontSize: 11 }}
             axisLine={false}
             tickLine={false}
             width={48}
@@ -345,7 +295,8 @@ export function ViewsLine({
               dataKey={net}
               stroke={SERIES_COLORS[net]}
               strokeWidth={2}
-              fill={`url(#line-${net})`}
+              fill={SERIES_COLORS[net]}
+              fillOpacity={0.05}
               dot={{ r: 3.5, fill: SERIES_COLORS[net], strokeWidth: 0 }}
               activeDot={{ r: 5 }}
               connectNulls

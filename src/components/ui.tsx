@@ -39,7 +39,7 @@ const BUTTON_SIZES: Record<ButtonSize, string> = {
   md: "min-h-11 rounded-full px-5 text-[15px]",
   sm: "min-h-9 rounded-full px-3.5 text-sm",
   icon: "h-11 w-11 rounded-full p-0",
-  lg: "min-h-[52px] w-full rounded-[14px] px-6 text-[17px] font-semibold",
+  lg: "min-h-[52px] w-full rounded-[12px] px-6 text-[17px] font-semibold",
 };
 
 export function Button({
@@ -66,7 +66,7 @@ export function Button({
 /* ---------- Input / Textarea / Select / Label ---------- */
 
 const FIELD_BASE =
-  "w-full rounded-[12px] border border-line bg-white px-3.5 text-[15px] text-ink placeholder:text-muted-fg/70 transition-colors duration-200 ease-apple focus:border-primary focus:outline-none";
+  "w-full rounded-[10px] border border-line bg-white px-3.5 text-[15px] text-ink placeholder:text-muted-fg/70 transition-colors duration-200 ease-apple focus:border-primary focus:outline-none";
 
 export function Input({
   className,
@@ -346,7 +346,7 @@ export function GroupedList({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-[20px] border border-line/60 bg-white",
+        "overflow-hidden rounded-[16px] border border-line bg-white",
         className,
       )}
     >
@@ -490,7 +490,7 @@ export function Dialog({
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="w-full max-w-lg rounded-[20px] border border-line/70 bg-white/85 p-5 shadow-[0_16px_48px_rgba(0,0,0,0.14)] backdrop-blur-xl"
+        className="w-full max-w-lg rounded-[16px] border border-line bg-white/85 p-5 shadow-[0_16px_48px_rgba(0,0,0,0.14)] backdrop-blur-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">
@@ -524,7 +524,7 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-start gap-2 rounded-[20px] border border-dashed border-line bg-white/60 px-5 py-8">
+    <div className="flex flex-col items-start gap-2 rounded-[16px] border border-dashed border-line bg-white/60 px-5 py-8">
       <p className="text-base font-semibold tracking-[-0.01em] text-ink">
         {title}
       </p>
