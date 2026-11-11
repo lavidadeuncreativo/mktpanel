@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import {
   BarChart3,
   BookOpen,
@@ -27,8 +28,8 @@ import { cn } from "./cn";
 
 const NAV: { id: ScreenId; icon: React.ReactNode }[] = [
   { id: "hoy", icon: <Home className="h-[18px] w-[18px]" aria-hidden="true" /> },
-  { id: "metricas", icon: <BarChart3 className="h-[18px] w-[18px]" aria-hidden="true" /> },
   { id: "contenido", icon: <ListVideo className="h-[18px] w-[18px]" aria-hidden="true" /> },
+  { id: "metricas", icon: <BarChart3 className="h-[18px] w-[18px]" aria-hidden="true" /> },
   { id: "ideas", icon: <Lightbulb className="h-[18px] w-[18px]" aria-hidden="true" /> },
   { id: "giveaway", icon: <Gift className="h-[18px] w-[18px]" aria-hidden="true" /> },
   { id: "pendientes", icon: <CheckSquare className="h-[18px] w-[18px]" aria-hidden="true" /> },
@@ -102,23 +103,31 @@ export function Sidebar() {
                   className={cn(
                     "relative flex min-h-10 w-full cursor-pointer items-center gap-3 rounded-lg px-3 text-[14px] transition-colors duration-150",
                     active
-                      ? "bg-black/[0.05] font-semibold text-ink"
+                      ? "font-semibold text-ink"
                       : "font-medium text-[#48484a] hover:bg-black/[0.03] hover:text-ink",
                   )}
                 >
                   {active ? (
-                    <span
-                      className="absolute top-1/2 left-0 h-5 w-[3px] -translate-y-1/2 rounded-full bg-primary"
+                    <motion.span
+                      layoutId="sidebar-active"
+                      className="absolute inset-0 rounded-lg bg-black/[0.05]"
+                      transition={{
+                        duration: 0.2,
+                        ease: [0.32, 0.72, 0, 1],
+                      }}
                       aria-hidden="true"
                     />
                   ) : null}
                   <span
-                    className={cn("shrink-0", active ? "text-ink" : "text-muted-fg")}
+                    className={cn(
+                      "relative shrink-0",
+                      active ? "text-ink" : "text-muted-fg",
+                    )}
                     aria-hidden="true"
                   >
                     {item.icon}
                   </span>
-                  {SCREEN_TITLES[item.id]}
+                  <span className="relative">{SCREEN_TITLES[item.id]}</span>
                 </button>
               </li>
             );

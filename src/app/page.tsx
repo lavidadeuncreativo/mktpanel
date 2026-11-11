@@ -1,5 +1,6 @@
 "use client";
 
+import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import { PanelProvider, usePanel } from "@/components/panel-context";
 import { Header, MobileNav } from "@/components/Header";
 import { Sidebar } from "@/components/Sidebar";
@@ -18,26 +19,49 @@ function Screen() {
   // Giveaway only exists for EVYM; anywhere else falls back to Hoy.
   const effective = screen === "giveaway" && view !== "evym" ? "hoy" : screen;
 
+  let content: React.ReactNode;
   switch (effective) {
     case "hoy":
-      return <Dashboard />;
+      content = <Dashboard />;
+      break;
     case "metricas":
-      return <Metrics />;
+      content = <Metrics />;
+      break;
     case "contenido":
-      return <Content />;
+      content = <Content />;
+      break;
     case "ideas":
-      return <Ideas />;
+      content = <Ideas />;
+      break;
     case "giveaway":
-      return <Giveaway />;
+      content = <Giveaway />;
+      break;
     case "pendientes":
-      return <Tasks />;
+      content = <Tasks />;
+      break;
     case "bitacora":
-      return <Log />;
+      content = <Log />;
+      break;
     case "conexiones":
-      return <Connections />;
+      content = <Connections />;
+      break;
     default:
-      return <Dashboard />;
+      content = <Dashboard />;
   }
+
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={effective}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -4 }}
+        transition={{ duration: 0.18, ease: [0.32, 0.72, 0, 1] }}
+      >
+        {content}
+      </motion.div>
+    </AnimatePresence>
+  );
 }
 
 function Shell() {
@@ -66,7 +90,7 @@ function Shell() {
         </main>
         <footer className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-line bg-white px-4 py-2.5 sm:px-6 lg:px-8">
           <p className="text-xs text-muted-fg">
-            Panel EVYM — tus datos se guardan solo en este navegador
+            Panel — tus datos se guardan solo en este navegador
             (localStorage). Nada sale de aquí.
           </p>
           <button
@@ -85,7 +109,9 @@ function Shell() {
 export default function Home() {
   return (
     <PanelProvider>
-      <Shell />
+      <MotionConfig reducedMotion="user">
+        <Shell />
+      </MotionConfig>
     </PanelProvider>
   );
 }
