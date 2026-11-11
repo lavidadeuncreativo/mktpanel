@@ -85,13 +85,31 @@ interface PanelContextValue {
 
 const PanelContext = createContext<PanelContextValue | null>(null);
 
+/**
+ * Instantánea del servidor, cacheada una sola vez: useSyncExternalStore
+ * exige que getServerSnapshot devuelva la misma referencia en cada
+ * llamada. buildSeedData() construye un objeto nuevo en cada llamada,
+ * así que pasarla directo provoca el error de React "The result of
+ * getServerSnapshot should be cached to avoid an infinite loop".
+ */
+let serverSnapshot: PanelData | null = null;
+
+function getServerSnapshot(): PanelData {
+  if (!serverSnapshot) serverSnapshot = buildSeedData();
+  return serverSnapshot;
+}
+
 export function PanelProvider({ children }: { children: ReactNode }) {
   // localStorage-backed external store: seed on the server, stored payload
   // on the client. No setState-in-effect hydration dance.
+  // getServerSnapshot DEBE devolver la misma referencia en cada llamada:
+  // buildSeedData() crea un objeto nuevo cada vez y React lo marca como
+  // bucle infinito (el overlay rojo "1 Issue" en dev). Se cachea una sola
+  // vez a nivel de módulo.
   const data = useSyncExternalStore(
     subscribePanelData,
     getPanelData,
-    buildSeedData,
+    getServerSnapshot,
   );
   const [view, setViewState] = useState<ViewId>("evym");
   const [screen, setScreenState] = useState<ScreenId>("hoy");

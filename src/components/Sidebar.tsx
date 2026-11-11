@@ -10,19 +10,19 @@ import {
   Link2,
   ListVideo,
 } from "lucide-react";
-import {
-  SCREEN_TITLES,
-  usePanel,
-  type ScreenId,
-} from "./panel-context";
+import { SCREEN_TITLES, usePanel, type ScreenId } from "./panel-context";
 import { WORKSPACES, type WorkspaceId } from "@/lib/types";
+import { workspaceTotals } from "@/lib/derive";
+import { formatNumber } from "@/lib/store";
+import { SegmentedControl } from "./ui";
 import { cn } from "./cn";
 
 /**
- * Barra lateral delgada estilo dashboard analítico: marca arriba,
- * navegación con icono + etiqueta, ítem activo con fondo sutil y el
- * selector de espacio abajo. En móvil se esconde: la navegación pasa
- * a la tira superior de page.tsx.
+ * Barra lateral, estilo Notion + Apple: marca arriba, el selector de
+ * espacio a la vista (el panel gestiona tres marcas — EVYM, Antojo y
+ * Personal — y antes el selector vivía abajo, escondido, así que el
+ * panel parecía solo de EVYM), y debajo la navegación con las 8
+ * secciones. Una sola cosa con peso: el espacio activo.
  */
 
 const NAV: { id: ScreenId; icon: React.ReactNode }[] = [
@@ -36,18 +36,16 @@ const NAV: { id: ScreenId; icon: React.ReactNode }[] = [
   { id: "conexiones", icon: <Link2 className="h-[18px] w-[18px]" aria-hidden="true" /> },
 ];
 
-const WORKSPACE_DOT: Record<WorkspaceId, string> = {
-  evym: "bg-[#af52de]",
-  antojo: "bg-[#ff9500]",
-  personal: "bg-[#0071e3]",
-};
-
 export function Sidebar() {
-  const { screen, openScreen, view, setView } = usePanel();
+  const { data, screen, openScreen, view, setView } = usePanel();
 
   // "General" ya no se ofrece en la interfaz; si por algún estado
   // heredado llegara, se cae a EVYM.
   const activeView: WorkspaceId = view === "general" ? "evym" : view;
+  const activeWs =
+    WORKSPACES.find((w) => w.id === activeView) ?? WORKSPACES[0];
+  const totals = workspaceTotals(data[activeView]);
+  const hasData = data[activeView].snapshots.length > 0;
 
   const visibleNav = NAV.filter(
     (n) => n.id !== "giveaway" || activeView === "evym",
@@ -62,14 +60,33 @@ export function Sidebar() {
         </span>
         <div className="min-w-0">
           <p className="text-[15px] leading-tight font-semibold tracking-[-0.01em] text-ink">
-            Panel EVYM
+            Panel
           </p>
           <p className="text-xs text-muted-fg">Marketing de contenido</p>
         </div>
       </div>
 
+      {/* Espacio: arriba y a la vista, no escondido abajo */}
+      <div className="border-b border-line px-4 pt-1 pb-4">
+        <p className="px-1 pb-1.5 text-xs font-medium text-muted-fg">
+          Espacio
+        </p>
+        <SegmentedControl
+          options={WORKSPACES.map((w) => ({ id: w.id, label: w.short }))}
+          value={activeView}
+          onChange={(id) => setView(id)}
+          ariaLabel="Espacio de trabajo"
+        />
+        <p className="mt-2 px-1 text-xs leading-snug text-muted-fg">
+          {activeWs.name}
+          {hasData
+            ? ` · ${formatNumber(totals.views)} vistas`
+            : " · sin datos todavía"}
+        </p>
+      </div>
+
       {/* Navegación */}
-      <nav aria-label="Secciones del panel" className="flex-1 px-3 pt-1">
+      <nav aria-label="Secciones del panel" className="flex-1 px-3 pt-3">
         <p className="px-3 pb-1.5 text-xs font-medium text-muted-fg">
           Panel
         </p>
@@ -109,41 +126,8 @@ export function Sidebar() {
         </ul>
       </nav>
 
-      {/* Selector de espacio, abajo */}
-      <div className="border-t border-line px-3 py-4">
-        <p className="px-3 pb-1.5 text-xs font-medium text-muted-fg">
-          Espacios
-        </p>
-        <ul className="space-y-0.5">
-          {WORKSPACES.map((ws) => {
-            const active = ws.id === activeView;
-            return (
-              <li key={ws.id}>
-                <button
-                  type="button"
-                  onClick={() => setView(ws.id)}
-                  aria-pressed={active}
-                  className={cn(
-                    "flex min-h-10 w-full cursor-pointer items-center gap-3 rounded-lg px-3 text-[14px] transition-colors duration-150",
-                    active
-                      ? "bg-black/[0.05] font-semibold text-ink"
-                      : "font-medium text-[#48484a] hover:bg-black/[0.03] hover:text-ink",
-                  )}
-                >
-                  <span
-                    className={cn("h-2.5 w-2.5 shrink-0 rounded-full", WORKSPACE_DOT[ws.id])}
-                    aria-hidden="true"
-                  />
-                  <span className="flex-1 text-left">{ws.name}</span>
-                  {active ? (
-                    <span className="text-xs font-semibold text-primary">Activo</span>
-                  ) : null}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-        <p className="mt-3 px-3 text-[11px] leading-snug text-muted-fg">
+      <div className="border-t border-line px-5 py-4">
+        <p className="text-[11px] leading-snug text-muted-fg">
           Tus datos viven solo en este navegador. Nada sale de aquí.
         </p>
       </div>
