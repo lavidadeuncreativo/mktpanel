@@ -64,6 +64,7 @@ function ContentForm({
       : "",
   );
   const [publishDate, setPublishDate] = useState(initial?.publishDate ?? "");
+  const [sound, setSound] = useState(initial?.sound ?? "");
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,6 +78,7 @@ function ContentForm({
         views: initial?.views ?? null,
         publishDate: publishDate || null,
         dayIndex: day === "" ? null : Number(day),
+        sound: sound.trim() || undefined,
       };
       const content = initial
         ? ws.content.map((c) => (c.id === initial.id ? item : c))
@@ -125,6 +127,16 @@ function ContentForm({
           type="date"
           value={publishDate}
           onChange={(e) => setPublishDate(e.target.value)}
+        />
+      </Field>
+      <Field
+        label="Sonido usado"
+        hint="Opcional: el audio o sonido del Reel. Con el sonido registrado en los Reels publicados, el panel puede recomendarte sonidos después."
+      >
+        <Input
+          value={sound}
+          onChange={(e) => setSound(e.target.value)}
+          placeholder="Nombre del sonido o audio…"
         />
       </Field>
       <div className="flex justify-end gap-2 pt-1">
@@ -291,6 +303,7 @@ export function Content() {
                   <th scope="col" className="py-2 pr-3 font-medium">Día</th>
                   <th scope="col" className="py-2 pr-3 font-medium">Estado</th>
                   <th scope="col" className="py-2 pr-3 font-medium">Publicación</th>
+                  <th scope="col" className="py-2 pr-3 font-medium">Sonido</th>
                   <th scope="col" className="py-2 pr-3 text-right font-medium">Vistas</th>
                   <th scope="col" className="py-2 text-right font-medium">
                     <span className="sr-only">Acciones</span>
@@ -324,6 +337,9 @@ export function Content() {
                       {c.publishDate
                         ? formatDateShort(c.publishDate)
                         : "Sin programar"}
+                    </td>
+                    <td className="max-w-[140px] truncate py-3 pr-3 text-muted-fg">
+                      {c.sound?.trim() ? c.sound : "Sin registrar"}
                     </td>
                     <td className="py-3 pr-3 text-right font-semibold text-ink">
                       {c.views !== null ? formatNumber(c.views) : "Sin datos"}

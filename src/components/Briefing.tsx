@@ -8,8 +8,13 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { usePanel } from "./panel-context";
-import type { WorkspaceData, WorkspaceId } from "@/lib/types";
-import { buildBriefing, type BriefingAction } from "@/lib/briefing";
+import type { PanelData, WorkspaceData, WorkspaceId } from "@/lib/types";
+import {
+  buildAggregateBriefing,
+  buildBriefing,
+  type Briefing as BriefingData,
+  type BriefingAction,
+} from "@/lib/briefing";
 
 /* ------------------------------------------------------------------ */
 /* El briefing de Hoy: la tarjeta de vidrio del héroe que le dice a    */
@@ -71,7 +76,27 @@ export function Briefing({
   // Derivado en cada render, nunca cacheado: cambiar de espacio (o de
   // vista general) vuelve a calcular el texto con los datos actuales.
   const b = buildBriefing(ws, wsId, iso);
+  return <BriefingView b={b} />;
+}
 
+/** El briefing agregado (vista general): suma las tres cuentas. Las
+ *  semanas van por espacio — cada una tiene su propia meta de 7 — y los
+ *  deltas solo se afirman donde hay segunda captura. */
+export function AggregateBriefing({
+  data,
+  iso,
+}: {
+  data: PanelData;
+  iso: string;
+}) {
+  const b = buildAggregateBriefing(data, iso);
+  return <BriefingView b={b} />;
+}
+
+/** La tarjeta en sí: misma vista para el briefing por espacio y para
+ *  el agregado. Cuando el briefing trae líneas de semana por espacio
+ *  (agregado), se muestran esas en lugar de la línea única "X de 7". */
+function BriefingView({ b }: { b: BriefingData }) {
   return (
     <div
       aria-label="Briefing del día"
@@ -117,16 +142,20 @@ export function Briefing({
           label="Esta semana"
           action={b.week.action}
         >
-          <p>
-            <span className="text-[22px] leading-none font-semibold tabular-nums">
-              {b.week.published}
-            </span>{" "}
-            de 7 publicados
-            {b.week.inPreparation > 0
-              ? ` · ${b.week.inPreparation} en preparación`
-              : ""}
-            .
-          </p>
+          {b.week.lines ? (
+            b.week.lines.map((line) => <p key={line}>{line}</p>)
+          ) : (
+            <p>
+              <span className="text-[22px] leading-none font-semibold tabular-nums">
+                {b.week.published}
+              </span>{" "}
+              de 7 publicados
+              {b.week.inPreparation > 0
+                ? ` · ${b.week.inPreparation} en preparación`
+                : ""}
+              .
+            </p>
+          )}
           <p className="text-white/85">Semana del {b.week.range}.</p>
         </BriefingCell>
 

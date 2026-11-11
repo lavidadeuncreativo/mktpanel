@@ -38,6 +38,11 @@ export interface ContentItem {
   publishDate: string | null;
   /** 0 = Monday … 6 = Sunday, within the current week. Null when unscheduled. */
   dayIndex: number | null;
+  /** Sonido o audio usado en el Reel, si se registró. Opcional: vacío
+   *  hasta que Israel diga qué sonido usó cada Reel publicado; nunca se
+   *  inventa un sonido. Sirve para que el panel recomiende sonidos a
+   *  partir de lo que funcionó. */
+  sound?: string;
 }
 
 export interface Idea {

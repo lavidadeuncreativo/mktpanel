@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { usePanel } from "./panel-context";
 import { Briefing } from "./Briefing";
+import { GeneralDashboard } from "./GeneralDashboard";
 import type { WorkspaceId } from "@/lib/types";
 import { STATUS_LABELS, WEEK_DAYS } from "@/lib/types";
 import {
@@ -168,6 +169,14 @@ export function Dashboard() {
     overviewDate === "all"
       ? ws.snapshots
       : ws.snapshots.filter((s) => s.date === overviewDate);
+
+  // La vista general ya no es EVYM disfrazado: tiene su propio
+  // dashboard agregado (totales, briefing agregado, una tarjeta por
+  // cuenta y "Qué publicar"). El resto de este componente es solo el
+  // Hoy por espacio, y queda exactamente igual.
+  if (view === "general") {
+    return <GeneralDashboard />;
+  }
 
   // Días de la semana con un Reel publicado (mini barras de crecimiento).
   const publishedDays = new Set(

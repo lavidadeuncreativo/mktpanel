@@ -9,6 +9,7 @@ import {
   PERSONAL_IG_SNAPSHOT_2026_11_11,
   PERSONAL_LOG_2026_11_11,
   REEL_VIEWS_2026_11_11,
+  SEED_IDEAS_2026_11_11,
   seedAntojo,
   seedEvym,
   seedPersonal,
@@ -154,6 +155,15 @@ export function migratePanelData(data: PanelData): PanelData {
   );
   if (missingReels.length > 0) {
     evym = { ...evym, content: [...evym.content, ...missingReels] };
+  }
+  // The four researched cases in the ideas bank (11 nov): append any
+  // missing one by id. Ideas the user already moved to script or
+  // deleted stay gone — only the seed ids are added.
+  const missingIdeas = SEED_IDEAS_2026_11_11.filter(
+    (idea) => !evym.ideas.some((i) => i.id === idea.id),
+  );
+  if (missingIdeas.length > 0) {
+    evym = { ...evym, ideas: [...evym.ideas, ...missingIdeas] };
   }
   apply("evym", evym);
 

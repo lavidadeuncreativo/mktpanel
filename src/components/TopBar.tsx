@@ -6,10 +6,11 @@ import {
   SCREEN_TITLES,
   usePanel,
   type ScreenId,
+  type ViewId,
 } from "./panel-context";
 import type { WorkspaceId, WorkspaceData } from "@/lib/types";
 import { WORKSPACES } from "@/lib/types";
-import { workspaceTotals } from "@/lib/derive";
+import { aggregateTotals, workspaceTotals } from "@/lib/derive";
 import { formatNumber } from "@/lib/store";
 import { SegmentedControl } from "./ui";
 import { cn } from "./cn";
@@ -32,50 +33,52 @@ interface SearchHit {
 }
 
 function searchWorkspace(
-  ws: WorkspaceData,
+  workspaces: WorkspaceData[],
   query: string,
 ): SearchHit[] {
   const q = query.trim().toLowerCase();
   if (q.length < 2) return [];
   const hits: SearchHit[] = [];
 
-  for (const c of ws.content) {
-    if (c.title.toLowerCase().includes(q)) {
-      hits.push({
-        key: `content-${c.id}`,
-        label: c.title,
-        sub: "Contenido",
-        screen: "contenido",
-        icon: <Clapperboard className="h-4 w-4" aria-hidden="true" />,
-      });
+  for (const ws of workspaces) {
+    for (const c of ws.content) {
+      if (c.title.toLowerCase().includes(q)) {
+        hits.push({
+          key: `content-${c.id}`,
+          label: c.title,
+          sub: "Contenido",
+          screen: "contenido",
+          icon: <Clapperboard className="h-4 w-4" aria-hidden="true" />,
+        });
+      }
     }
-  }
-  for (const i of ws.ideas) {
-    if (
-      i.title.toLowerCase().includes(q) ||
-      i.notes.toLowerCase().includes(q)
-    ) {
-      hits.push({
-        key: `idea-${i.id}`,
-        label: i.title,
-        sub: `${i.score} de 10`,
-        screen: "ideas",
-        icon: <Lightbulb className="h-4 w-4" aria-hidden="true" />,
-      });
+    for (const i of ws.ideas) {
+      if (
+        i.title.toLowerCase().includes(q) ||
+        i.notes.toLowerCase().includes(q)
+      ) {
+        hits.push({
+          key: `idea-${i.id}`,
+          label: i.title,
+          sub: `${i.score} de 10`,
+          screen: "ideas",
+          icon: <Lightbulb className="h-4 w-4" aria-hidden="true" />,
+        });
+      }
     }
-  }
-  for (const a of ws.anecdotes) {
-    if (
-      a.title.toLowerCase().includes(q) ||
-      a.name.toLowerCase().includes(q)
-    ) {
-      hits.push({
-        key: `anecdote-${a.id}`,
-        label: a.title,
-        sub: a.name,
-        screen: "giveaway",
-        icon: <Gift className="h-4 w-4" aria-hidden="true" />,
-      });
+    for (const a of ws.anecdotes) {
+      if (
+        a.title.toLowerCase().includes(q) ||
+        a.name.toLowerCase().includes(q)
+      ) {
+        hits.push({
+          key: `anecdote-${a.id}`,
+          label: a.title,
+          sub: a.name,
+          screen: "giveaway",
+          icon: <Gift className="h-4 w-4" aria-hidden="true" />,
+        });
+      }
     }
   }
   const screens: ScreenId[] = [
@@ -127,20 +130,38 @@ export function TopBar() {
   // superior de la referencia): fondo transparente y texto blanco.
   const onGradient = screen === "hoy";
 
-  // "General" ya no se ofrece en la interfaz; si por algún estado
-  // heredado llegara, se cae a EVYM.
-  const activeView: WorkspaceId = view === "general" ? "evym" : view;
-  const ws = data[activeView];
-  const activeWs =
-    WORKSPACES.find((w) => w.id === activeView) ?? WORKSPACES[0];
-  const totals = workspaceTotals(ws);
-  const hasData = ws.snapshots.length > 0;
+  // "General" vuelve a ofrecerse: ahora sí es un resumen agregado de
+  // verdad (antes era EVYM disfrazado y por eso se había quitado). En
+  // General el buscador busca en las tres cuentas y la línea de estado
+  // muestra los totales agregados.
+  const activeView: ViewId = view;
+  const isGeneral = view === "general";
+  const totals = isGeneral
+    ? aggregateTotals(data)
+    : workspaceTotals(data[view]);
+  const hasData = isGeneral
+    ? (Object.keys(data) as WorkspaceId[]).some(
+        (id) => data[id].snapshots.length > 0,
+      )
+    : data[view].snapshots.length > 0;
+  const activeLabel = isGeneral
+    ? "General"
+    : (WORKSPACES.find((w) => w.id === view)?.name ?? view);
 
   const visibleNav = NAV.filter(
-    (id) => id !== "giveaway" || activeView === "evym",
+    (id) => id !== "giveaway" || view === "evym",
   );
 
-  const results = useMemo(() => searchWorkspace(ws, query), [ws, query]);
+  const results = useMemo(
+    () =>
+      searchWorkspace(
+        isGeneral
+          ? [data.evym, data.antojo, data.personal]
+          : [data[view]],
+        query,
+      ),
+    [data, isGeneral, view, query],
+  );
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
@@ -270,7 +291,10 @@ export function TopBar() {
 
         <div className="ml-auto shrink-0">
           <SegmentedControl
-            options={WORKSPACES.map((w) => ({ id: w.id, label: w.short }))}
+            options={[
+              { id: "general" as ViewId, label: "General" },
+              ...WORKSPACES.map((w) => ({ id: w.id as ViewId, label: w.short })),
+            ]}
             value={activeView}
             onChange={(id) => setView(id)}
             ariaLabel="Espacio de trabajo"
@@ -281,7 +305,7 @@ export function TopBar() {
               onGradient ? "text-white/75" : "text-muted-fg",
             )}
           >
-            {activeWs.name}
+            {activeLabel}
             {hasData
               ? ` · ${formatNumber(totals.views)} vistas`
               : " · sin datos todavía"}

@@ -1,5 +1,6 @@
 import type {
   ContentItem,
+  Idea,
   LogEntry,
   MetricSnapshot,
   TaskItem,
@@ -222,11 +223,55 @@ export const PENDING_REELS_2026_11_11: ContentItem[] = [
 ];
 
 /**
+ * Banco de casos de EVYM (11 nov 2026): los casos under investigados el
+ * 10–11 nov que Israel ya discutió. Aramberri fue elegido por él como
+ * próximo caso; los otros tres se ofrecieron y no se han elegido todavía
+ * — las notas lo dicen tal cual. No se incluyen los casos que descartó
+ * explícitamente (Los Narcosatánicos, El asesino de Cumbres, secta de la
+ * Santa Muerte).
+ */
+export const SEED_IDEAS_2026_11_11: Idea[] = [
+  {
+    id: "seed-idea-aramberri",
+    title: "Casa de Aramberri, Monterrey",
+    score: 9,
+    notes:
+      "Elegido por Israel el 11 nov como próximo caso: Antonia Lozano, 54, y su hija Florinda, 22, asesinadas el 5 abr 1933 en Aramberri 1026; el loro que repetía \"¡No me mates, Gabriel!\" es leyenda, no hecho probado. Ya existen versiones de guion (Farid y Fausto+Farid).",
+    createdAt: "2026-11-11",
+  },
+  {
+    id: "seed-idea-hiena",
+    title: "La Hiena de Querétaro (Claudia Mijangos)",
+    score: 7,
+    notes:
+      "Opción under ofrecida el 10 nov, no elegida todavía: 24 abr 1989, mató a sus tres hijos; requiere un enfoque no sensacionalista (posesión vs. enfermedad).",
+    createdAt: "2026-11-11",
+  },
+  {
+    id: "seed-idea-canitas",
+    title: "Cañitas (casa de Carlos Trejo, Popotla)",
+    score: 7,
+    notes:
+      "Opción under ofrecida el 10 nov, no elegida todavía: casa de 1982, caso clásico del terror mexicano.",
+    createdAt: "2026-11-11",
+  },
+  {
+    id: "seed-idea-tubos",
+    title: "Casa de los Tubos, Monterrey",
+    score: 7,
+    notes:
+      "Opción under ofrecida el 10 nov, no elegida todavía.",
+    createdAt: "2026-11-11",
+  },
+];
+
+/**
  * Real seed data: 10 nov 2026 manual capture plus the 11 nov 2026 live
- * Meta captures, and the three Reels already scripted and waiting for
- * images. Nothing here is invented. Antojo and the personal profile
- * now carry their real 11 nov snapshots (Facebook + Instagram for Antojo,
- * Instagram for personal); their content, ideas and anecdotes stay empty.
+ * Meta captures, the three Reels already scripted and waiting for
+ * images, and the four cases under del banco de ideas. Nothing here is
+ * invented. Antojo and the personal profile now carry their real 11 nov
+ * snapshots (Facebook + Instagram for Antojo, Instagram for personal);
+ * their content, ideas and anecdotes stay empty.
  */
 export function seedEvym(): WorkspaceData {
   return {
@@ -250,7 +295,7 @@ export function seedEvym(): WorkspaceData {
       },
       ...PENDING_REELS_2026_11_11,
     ],
-    ideas: [],
+    ideas: [...SEED_IDEAS_2026_11_11],
     anecdotes: [],
     tasks: SEED_TASKS,
     log: [...SEED_LOG, ...EVYM_LOG_2026_11_11],
