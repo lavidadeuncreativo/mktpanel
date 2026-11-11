@@ -20,7 +20,7 @@ import {
 /**
  * Las pantallas del panel: el dashboard (Hoy) más los módulos, que ya no
  * son overlays sino vistas propias a las que se llega desde la barra
- * lateral. El Resumen anterior quedó absorbido por el dashboard de Hoy
+ * superior. El Resumen anterior quedó absorbido por el dashboard de Hoy
  * (sus KPIs, gráficas y listas viven ahí).
  */
 export type ModuleId =
@@ -31,7 +31,7 @@ export type ModuleId =
   | "pendientes"
   | "bitacora";
 
-export type ScreenId = "hoy" | ModuleId | "conexiones" | "agente";
+export type ScreenId = "hoy" | ModuleId | "conexiones" | "agente" | "calendario";
 
 export type ViewId = "general" | WorkspaceId;
 
@@ -49,6 +49,7 @@ export const SCREEN_TITLES: Record<ScreenId, string> = {
   agente: "Agente",
   metricas: "Métricas",
   contenido: "Contenido",
+  calendario: "Calendario",
   ideas: "Ideas",
   giveaway: "Giveaway",
   pendientes: "Pendientes",
@@ -82,6 +83,12 @@ interface PanelContextValue {
   setModule: (m: ModuleId) => void;
   /** Workspace whose data the current screen shows. "general" aggregates. */
   activeWorkspace: WorkspaceId | "general";
+  /** Reel que Contenido debe abrir (diálogo de edición) al llegar desde
+   *  el Calendario. Contenido lo consume una sola vez y lo limpia. */
+  focusedContentId: string | null;
+  /** Abre Contenido en el espacio del Reel y pide abrir su detalle. */
+  focusContent: (id: string, ws: WorkspaceId) => void;
+  clearContentFocus: () => void;
 }
 
 const PanelContext = createContext<PanelContextValue | null>(null);
@@ -114,6 +121,9 @@ export function PanelProvider({ children }: { children: ReactNode }) {
   );
   const [view, setViewState] = useState<ViewId>("evym");
   const [screen, setScreenState] = useState<ScreenId>("hoy");
+  const [focusedContentId, setFocusedContentId] = useState<string | null>(
+    null,
+  );
 
   const update = useCallback((fn: (d: PanelData) => PanelData) => {
     setPanelData(fn(getPanelData()));
@@ -132,6 +142,16 @@ export function PanelProvider({ children }: { children: ReactNode }) {
 
   const openScreen = useCallback((s: ScreenId) => {
     setScreenState(s);
+  }, []);
+
+  const focusContent = useCallback((id: string, ws: WorkspaceId) => {
+    setViewState(ws);
+    setFocusedContentId(id);
+    setScreenState("contenido");
+  }, []);
+
+  const clearContentFocus = useCallback(() => {
+    setFocusedContentId(null);
   }, []);
 
   const openModule = useCallback((m: ModuleId) => {
@@ -157,8 +177,11 @@ export function PanelProvider({ children }: { children: ReactNode }) {
       closeModule,
       setModule,
       activeWorkspace: view,
+      focusedContentId,
+      focusContent,
+      clearContentFocus,
     }),
-    [data, update, resetAll, view, setView, screen, openScreen, openModule, closeModule, setModule],
+    [data, update, resetAll, view, setView, screen, openScreen, openModule, closeModule, setModule, focusedContentId, focusContent, clearContentFocus],
   );
 
   return (

@@ -27,7 +27,9 @@ import {
   StaggerItem,
 } from "../ui";
 
-function statusTone(status: ContentStatus): "green" | "blue" | "violet" | "neutral" | "amber" {
+/** Color de cada estado del pipeline. Lo usa también el Calendario,
+ *  para que un Reel se vea igual en los dos sitios. */
+export function statusTone(status: ContentStatus): "green" | "blue" | "violet" | "neutral" | "amber" {
   switch (status) {
     case "publicado":
       return "green";
@@ -138,10 +140,29 @@ function ContentForm({
 }
 
 export function Content() {
-  const { data, view, update } = usePanel();
+  const { data, view, update, focusedContentId, clearContentFocus } =
+    usePanel();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<ContentItem | null>(null);
   const today = todayDayIndex(useTodayIso());
+
+  // El Calendario pide abrir un Reel: se deriva del foco, sin efectos.
+  // El diálogo se abre mientras el foco apunta a un Reel que existe; al
+  // cerrarlo se limpia el foco (y el estado local), así que no puede
+  // reaparecer solo. No hay setState en efectos: la regla de lint lo
+  // prohíbe y la derivación lo hace innecesario.
+  const focusedItem =
+    focusedContentId && view !== "general"
+      ? (data[view].content.find((c) => c.id === focusedContentId) ?? null)
+      : null;
+  const dialogItem = editing ?? focusedItem;
+  const dialogIsOpen = dialogOpen || focusedItem !== null;
+
+  const closeDialog = () => {
+    setDialogOpen(false);
+    setEditing(null);
+    clearContentFocus();
+  };
 
   if (view === "general") {
     const all = [
@@ -340,14 +361,14 @@ export function Content() {
       </Stagger>
 
       <Dialog
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-        title={editing ? "Editar Reel" : "Agregar Reel"}
+        open={dialogIsOpen}
+        onClose={closeDialog}
+        title={dialogItem ? "Editar Reel" : "Agregar Reel"}
       >
         <ContentForm
-          initial={editing}
+          initial={dialogItem}
           workspaceId={view}
-          onClose={() => setDialogOpen(false)}
+          onClose={closeDialog}
         />
       </Dialog>
     </div>

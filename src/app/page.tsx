@@ -2,12 +2,12 @@
 
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import { PanelProvider, usePanel } from "@/components/panel-context";
-import { Header, MobileNav } from "@/components/Header";
-import { Sidebar } from "@/components/Sidebar";
+import { TopBar } from "@/components/TopBar";
 import { Dashboard } from "@/components/Dashboard";
 import { AgentChat } from "@/components/Agent";
 import { Metrics } from "@/components/modules/Metrics";
 import { Content } from "@/components/modules/Content";
+import { Calendar } from "@/components/modules/Calendar";
 import { Ideas } from "@/components/modules/Ideas";
 import { Giveaway } from "@/components/modules/Giveaway";
 import { Tasks } from "@/components/modules/Tasks";
@@ -34,6 +34,9 @@ function Screen() {
       break;
     case "contenido":
       content = <Content />;
+      break;
+    case "calendario":
+      content = <Calendar />;
       break;
     case "ideas":
       content = <Ideas />;
@@ -88,16 +91,14 @@ function Shell() {
   };
 
   return (
-    <div className="shell-in flex min-h-screen bg-page">
-      <Sidebar />
+    <div className="shell-in flex min-h-screen flex-col bg-page">
       <div
         className={cn(
           "flex min-w-0 flex-1 flex-col",
           onGradient && "hero-animated",
         )}
       >
-        <Header />
-        <MobileNav />
+        <TopBar />
         <main className="min-w-0 flex-1 px-4 py-5 sm:px-6 lg:px-8 lg:py-6">
           <div className="mx-auto w-full max-w-[1280px]">
             <Screen />
@@ -105,7 +106,9 @@ function Shell() {
         </main>
         <footer
           className={cn(
-            "flex shrink-0 flex-wrap items-center justify-between gap-3 border-t px-4 py-2.5 sm:px-6 lg:px-8",
+            // Aire abajo para que el botón fijo de las herramientas de
+            // desarrollo (esquina inferior izquierda) nunca tape el texto.
+            "flex shrink-0 flex-wrap items-center justify-between gap-3 border-t px-4 pt-2.5 pb-16 sm:px-6 lg:px-8",
             onGradient
               ? "border-white/20 bg-transparent"
               : "border-line bg-card",
