@@ -10,6 +10,13 @@ import {
   weeklyProgress,
   workspaceTotals,
 } from "./derive";
+import {
+  findReelByTitle,
+  formatDayLong,
+  nextPublishSlot,
+  parseScheduleDay,
+} from "./universe";
+import { loadAiConfig } from "./ai";
 import { formatDateShort, formatNumber } from "./store";
 
 /* ------------------------------------------------------------------ */
@@ -29,7 +36,8 @@ export type AgentScreen =
   | "giveaway"
   | "pendientes"
   | "bitacora"
-  | "conexiones";
+  | "conexiones"
+  | "calendario";
 
 export type AgentWidgetKind =
   | "reel"
@@ -41,7 +49,13 @@ export type AgentWidgetKind =
 
 export type AgentEffect =
   | { type: "addIdea"; title: string; score: number }
-  | { type: "addReel"; title: string };
+  | { type: "addReel"; title: string }
+  | {
+      type: "scheduleReel";
+      wsId: WorkspaceId;
+      itemId: string;
+      date: string;
+    };
 
 export type PendingIntent = "idea" | "reel" | null;
 
@@ -56,6 +70,14 @@ export interface AgentReply {
   workspace?: WorkspaceId;
   /** Si el agente queda esperando un dato (el título de algo). */
   pending?: PendingIntent;
+  /** Generación con IA (guion o copy) que el chat ejecuta con la
+   *  clave guardada en Conexiones y muestra para guardar. */
+  generate?: {
+    kind: "script" | "copy";
+    wsId: WorkspaceId;
+    itemId: string;
+    title: string;
+  };
 }
 
 const SCREEN_NAMES: Record<string, AgentScreen> = {
@@ -86,6 +108,7 @@ const SCREEN_LABELS: Record<AgentScreen, string> = {
   pendientes: "Pendientes",
   bitacora: "Bitácora",
   conexiones: "Conexiones",
+  calendario: "Calendario",
 };
 
 function norm(raw: string): string {
@@ -198,7 +221,11 @@ function tasksText(ws: WorkspaceData): string {
 }
 
 function capabilitiesText(): string {
-  return `Puedo ayudarte con lo que ya tienes guardado aquí: qué toca hoy, cómo van las métricas, qué falta por publicar, tus ideas, el giveaway y tus pendientes. También puedo guardar ideas y Reels si me dices "agregar idea: ..." o "agregar reel: ...", y llevarte a cualquier sección. Lo que todavía no puedo: traer métricas nuevas de Meta ni publicar por ti; eso necesita el token, que se conecta en Conexiones.`;
+  const hasKey = loadAiConfig() !== null;
+  const ai = hasKey
+    ? "Con tu clave de IA, también genero el guion y el copy de un Reel: dime \"genera el guion de El Club Caníbal\" o \"genera el copy de La Pascualita\"."
+    : "Sin clave de IA no puedo generar guiones ni copys: la clave se pega en Conexiones, sección Inteligencia artificial, y nunca invento un guion sin ella.";
+  return `Puedo ayudarte con lo que ya tienes guardado aquí: qué toca hoy, cómo van las métricas, qué falta por publicar, tus ideas, el giveaway y tus pendientes. Puedo recomendarte cuándo publicar —dime "¿cuándo publico?"— y programar un Reel: "programa El Club Caníbal para el viernes". También puedo guardar ideas y Reels si me dices "agregar idea: ..." o "agregar reel: ...", y llevarte a cualquier sección. ${ai} Lo que todavía no puedo: traer métricas nuevas de Meta ni publicar por ti; eso necesita el token, que se conecta en Conexiones.`;
 }
 
 /** ¿Esto parece una orden o pregunta para el agente, y no el título de
@@ -207,10 +234,40 @@ function capabilitiesText(): string {
 function looksLikeCommand(q: string): boolean {
   return (
     /^(hola|buenas|hey|que tal|ayuda|gracias|cancelar|olvida)/.test(q) ||
-    /(metrica|contenido|pipeline|idea|giveaway|sorteo|pendiente|checklist|bitacora|conexion|conecta|meta|token|publica|que toca|que falta|como van|hoy|abre|llevame|ir a|cambia|resumen)/.test(
+    /(metrica|contenido|pipeline|idea|giveaway|sorteo|pendiente|checklist|bitacora|conexion|conecta|meta|token|publica|que toca|que falta|como van|hoy|abre|llevame|ir a|cambia|resumen|genera|guion|copy|caption|programa|cuando publico)/.test(
       q,
     )
   );
+}
+
+/** El Reel sin publicar más avanzado del espacio, o el de hoy si lo
+ *  hay: el objetivo por defecto de "genera el guion" sin título. */
+function defaultGenerateTarget(
+  data: PanelData,
+  wsId: WorkspaceId,
+  iso: string,
+): { wsId: WorkspaceId; item: (typeof data)["evym"]["content"][number] } | null {
+  const today = todayReel(data[wsId], iso);
+  if (today && today.status !== "publicado") return { wsId, item: today };
+  const upcoming = publishQueue(data[wsId]).filter(
+    (c) => c.status !== "publicado",
+  );
+  if (upcoming.length > 0) return { wsId, item: upcoming[0] };
+  return null;
+}
+
+function nextSlotText(data: PanelData, iso: string): string {
+  const slot = nextPublishSlot(data, iso);
+  if (!slot?.reel) {
+    const hasUnpublished = (["evym", "antojo", "personal"] as WorkspaceId[]).some(
+      (id) => data[id].content.some((c) => c.status !== "publicado"),
+    );
+    return hasUnpublished
+      ? "No queda un día libre en los próximos 7 días: revisa el calendario, hay días con más de un Reel encima."
+      : "No hay nada sin publicar: el pipeline está al día. Agrega un Reel en Contenido y te digo cuándo sacarlo.";
+  }
+  const wsName = WORKSPACES.find((w) => w.id === slot.reel?.wsId)?.short;
+  return `El primer hueco libre es el ${slot.dayLabel} (${formatDateShort(slot.date)}). Lo más avanzado sin publicar es "${slot.reel.item.title}" (${wsName}, ${STATUS_LABELS[slot.reel.item.status]}). Si quieres, dime "programa ${slot.reel.item.title} para el ${slot.dayLabel.split(" ")[0]}" y lo dejo en ese día.`;
 }
 
 export function answerAgent(
@@ -323,6 +380,109 @@ export function answerAgent(
     return {
       text: `Te llevo a ${SCREEN_LABELS[screen]}.`,
       action: { label: `Abrir ${SCREEN_LABELS[screen]}`, screen },
+      pending: null,
+    };
+  }
+
+  // Programar un Reel: "programa El Club Caníbal para el viernes".
+  // La fecha sale del día que dice; el Reel, por su título.
+  const sched = q.match(
+    /^programa\s+(.+?)\s+(para|el|este)\s+(.+)$/,
+  );
+  if (/\bprograma\b/.test(q) && sched) {
+    const titlePart = sched[1].trim();
+    const date = parseScheduleDay(q, iso);
+    const found =
+      findReelByTitle(data, titlePart, wsId) ??
+      findReelByTitle(data, titlePart);
+    if (!found) {
+      const unpublished = publishQueue(ws).filter(
+        (c) => c.status !== "publicado",
+      );
+      return {
+        text:
+          unpublished.length === 0
+            ? `No encontré un Reel llamado "${titlePart}" y no hay nada sin publicar. Agrega un Reel en Contenido y lo programamos.`
+            : `No encontré un Reel llamado "${titlePart}". Los que tienes sin programar son: ${unpublished.map((c) => c.title).join("; ")}. Dime "programa [nombre] para el viernes" con el nombre exacto.`,
+        widget: "queue",
+        pending: null,
+      };
+    }
+    if (!date) {
+      return {
+        text: `¿Para qué día programo "${found.item.title}"? Dime el día: "programa ${found.item.title} para el viernes".`,
+        widget: "queue",
+        pending: null,
+      };
+    }
+    return {
+      text: `Listo, "${found.item.title}" quedó programado para el ${formatDayLong(date)} (${formatDateShort(date)}). Lo ves en el Calendario.`,
+      widget: "queue",
+      action: { label: "Ver Calendario", screen: "calendario" },
+      effect: {
+        type: "scheduleReel",
+        wsId: found.wsId,
+        itemId: found.item.id,
+        date,
+      },
+      pending: null,
+    };
+  }
+  if (/\bprograma\b/.test(q)) {
+    return {
+      text: `Para programar dime el Reel y el día: "programa El Club Caníbal para el viernes".`,
+      widget: "queue",
+      pending: null,
+    };
+  }
+
+  // ¿Cuándo publico? El primer hueco libre y el Reel más avanzado.
+  if (/(cuando publico|cuando subo|que dia publico|mejor dia para publicar)/.test(q)) {
+    return {
+      text: nextSlotText(data, iso),
+      widget: "queue",
+      action: { label: "Ver Calendario", screen: "calendario" },
+      pending: null,
+    };
+  }
+
+  // Generar guion o copy con IA: "genera el guion de El Club Caníbal".
+  // Sin clave, el agente lo dice y apunta a Conexiones — nunca finge.
+  const gen = q.match(
+    /\b(generar|genera|escribe|crea)\b[^,.;]*?\b(guion|copy|caption)\b(?:\s+(?:de|para|del|de la|de el))?\s*(.*)$/,
+  );
+  if (gen) {
+    const kind = gen[2] === "guion" ? "script" : "copy";
+    const kindLabel = kind === "script" ? "guion" : "copy";
+    const titlePart = (gen[3] ?? "").trim();
+    const target = titlePart
+      ? (findReelByTitle(data, titlePart, wsId) ??
+        findReelByTitle(data, titlePart))
+      : defaultGenerateTarget(data, wsId, iso);
+    if (!target) {
+      return {
+        text: titlePart
+          ? `No encontré un Reel llamado "${titlePart}". Dime el nombre exacto del Reel del pipeline.`
+          : `No hay ningún Reel sin publicar al que generarle ${kindLabel}. Agrega uno en Contenido primero.`,
+        widget: "queue",
+        pending: null,
+      };
+    }
+    if (!loadAiConfig()) {
+      return {
+        text: `Para generar el ${kindLabel} de "${target.item.title}" necesito tu clave de OpenAI: pégala en Conexiones, sección Inteligencia artificial. Sin ella no genero nada, para no inventarte un guion.`,
+        action: { label: "Abrir Conexiones", screen: "conexiones" },
+        pending: null,
+      };
+    }
+    return {
+      text: `Generando el ${kindLabel} de "${target.item.title}"…`,
+      generate: {
+        kind,
+        wsId: target.wsId,
+        itemId: target.item.id,
+        title: target.item.title,
+      },
       pending: null,
     };
   }

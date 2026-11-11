@@ -25,6 +25,13 @@ import {
   type PendingIntent,
 } from "@/lib/agent";
 import {
+  AiApiError,
+  generateCopy,
+  generateScript,
+  loadAiConfig,
+} from "@/lib/ai";
+import { parseIso, weekdayIndex } from "@/lib/universe";
+import {
   nextSuggestedIdea,
   publishQueue,
   streak,
@@ -551,12 +558,22 @@ interface ChatMsg {
   greeting?: boolean;
   widget?: AgentWidgetKind;
   action?: { label: string; screen: ScreenId };
+  /** Resultado generado por la IA, con su botón Guardar en el Reel. */
+  saveAction?: {
+    kind: "script" | "copy";
+    wsId: WorkspaceId;
+    itemId: string;
+    text: string;
+  };
+  /** Ya se guardó en el Reel: el botón pasa a "Guardado". */
+  saved?: boolean;
 }
 
 const CHIPS = [
   "¿Qué toca hoy?",
   "¿Cómo van las métricas?",
   "¿Qué falta por publicar?",
+  "¿Cuándo publico?",
   "Dame una idea",
   "¿Qué hay pendiente?",
 ];
@@ -668,9 +685,88 @@ export function AgentChat() {
           ],
         },
       }));
+    } else if (reply.effect?.type === "scheduleReel") {
+      const { wsId: targetWs, itemId, date } = reply.effect;
+      update((d) => ({
+        ...d,
+        [targetWs]: {
+          ...d[targetWs],
+          content: d[targetWs].content.map((c) =>
+            c.id === itemId
+              ? {
+                  ...c,
+                  publishDate: date,
+                  dayIndex: weekdayIndex(parseIso(date)),
+                }
+              : c,
+          ),
+        },
+      }));
     }
     if (reply.workspace) setView(reply.workspace);
     setPending(reply.pending ?? null);
+
+    // Generación con IA: la llamada sale ya, en paralelo; el mensaje
+    // "Generando…" aparece a los 550 ms y el resultado cuando la API
+    // responde. Si falla, el error llega en español llano.
+    if (reply.generate) {
+      const gen = reply.generate;
+      const item = data[gen.wsId].content.find((c) => c.id === gen.itemId);
+      const config = loadAiConfig();
+      const notes =
+        data[gen.wsId].ideas.find(
+          (i) => i.title.toLowerCase() === gen.title.toLowerCase(),
+        )?.notes ?? null;
+      const promise =
+        item && config
+          ? gen.kind === "script"
+            ? generateScript(config, item, gen.wsId, notes)
+            : generateCopy(config, item, gen.wsId, notes)
+          : Promise.reject(
+              new AiApiError(
+                "No se pudo generar: falta la clave de IA o el Reel ya no existe. Revisa la clave en Conexiones.",
+              ),
+            );
+      timerRef.current = setTimeout(() => {
+        setMessages((m) => [
+          ...m,
+          { id: uid(), role: "agent", text: reply.text },
+        ]);
+        promise
+          .then((result) => {
+            setMessages((m) => [
+              ...m,
+              {
+                id: uid(),
+                role: "agent",
+                text: result,
+                saveAction: {
+                  kind: gen.kind,
+                  wsId: gen.wsId,
+                  itemId: gen.itemId,
+                  text: result,
+                },
+              },
+            ]);
+            setTyping(false);
+          })
+          .catch((e) => {
+            setMessages((m) => [
+              ...m,
+              {
+                id: uid(),
+                role: "agent",
+                text:
+                  e instanceof AiApiError
+                    ? e.message
+                    : "No se pudo generar. Inténtalo de nuevo.",
+              },
+            ]);
+            setTyping(false);
+          });
+      }, 550);
+      return;
+    }
 
     timerRef.current = setTimeout(() => {
       setMessages((m) => [
@@ -694,6 +790,25 @@ export function AgentChat() {
 
   const lastIsAgent =
     messages.length > 0 && messages[messages.length - 1].role === "agent";
+
+  /** Guarda un guion o copy generado en su Reel (script / copy). */
+  const saveGenerated = (msgId: string) => {
+    const msg = messages.find((m) => m.id === msgId);
+    if (!msg?.saveAction) return;
+    const { kind, wsId: targetWs, itemId, text } = msg.saveAction;
+    update((d) => ({
+      ...d,
+      [targetWs]: {
+        ...d[targetWs],
+        content: d[targetWs].content.map((c) =>
+          c.id === itemId ? { ...c, [kind]: text } : c,
+        ),
+      },
+    }));
+    setMessages((m) =>
+      m.map((x) => (x.id === msgId ? { ...x, saved: true } : x)),
+    );
+  };
 
   return (
     <div className="mx-auto w-full max-w-[760px]">
@@ -747,6 +862,25 @@ export function AgentChat() {
                 {msg.widget ? (
                   <div className="mt-3">
                     <AgentWidget kind={msg.widget} />
+                  </div>
+                ) : null}
+                {msg.saveAction ? (
+                  <div className="mt-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={msg.saved}
+                      onClick={() => saveGenerated(msg.id)}
+                    >
+                      {msg.saved
+                        ? `Guardado en el Reel`
+                        : `Guardar ${msg.saveAction.kind === "script" ? "guion" : "copy"} en el Reel`}
+                    </Button>
+                    {msg.saved ? (
+                      <p className="mt-2 text-[13px] text-muted-fg">
+                        Quedó guardado: lo ves y lo editas en Contenido.
+                      </p>
+                    ) : null}
                   </div>
                 ) : null}
                 {msg.action ? (
@@ -838,7 +972,7 @@ export function AgentChat() {
         </form>
         <p className="px-2 pt-2 pb-1 text-center text-xs text-muted-fg">
           El agente solo usa lo guardado en este navegador. Para métricas
-          nuevas de Meta, ve a Conexiones.
+          nuevas de Meta o generar guiones con IA, ve a Conexiones.
         </p>
       </div>
     </div>

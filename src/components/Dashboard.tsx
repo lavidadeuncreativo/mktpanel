@@ -219,8 +219,7 @@ export function Dashboard() {
     <div className="space-y-4">
       {/* ---------- Héroe: el degradado animado ya es el fondo de la
            página en Hoy (ver page.tsx); aquí solo van el saludo grande,
-           las acciones y la tarjeta de resumen en vidrio, como en la
-           referencia. ---------- */}
+           las acciones y la tarjeta de resumen BLANCA y sólida. ---------- */}
       <section aria-label="Resumen del día" className="relative px-2 pt-4 pb-6 text-white sm:px-4">
         <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0">
@@ -242,34 +241,26 @@ export function Dashboard() {
               <button
                 type="button"
                 onClick={() => openScreen("metricas")}
-                className="flex h-11 cursor-pointer items-center gap-2 rounded-full border border-white/40 bg-white/10 px-5 text-[15px] font-semibold text-white backdrop-blur-sm transition-colors duration-200 ease-apple hover:bg-white/20"
+                className="flex h-11 cursor-pointer items-center gap-2 rounded-full border border-white/40 bg-white/10 px-5 text-[15px] font-semibold text-white transition-colors duration-200 ease-apple hover:bg-white/20"
               >
                 Registrar captura
               </button>
             </div>
           </div>
 
-          {/* Tarjeta de resumen en vidrio, con tarjetas apiladas detrás
-              (profundidad, como en la referencia). */}
+          {/* Tarjeta de resumen BLANCA y sólida sobre el degradado
+              (antes era vidrio transparente y no se leía bien). */}
           <div className="relative w-full max-w-[320px] shrink-0">
-            <div
-              aria-hidden="true"
-              className="absolute inset-x-3 -top-3 h-full rotate-[2deg] rounded-[16px] border border-white/15 bg-white/10"
-            />
-            <div
-              aria-hidden="true"
-              className="absolute inset-x-1.5 -top-1.5 h-full -rotate-[1.5deg] rounded-[16px] border border-white/20 bg-white/10"
-            />
-            <div className="relative rounded-[16px] border border-white/25 bg-white/15 p-5 backdrop-blur-md">
+            <div className="surface p-5">
             {hasSnapshots ? (
               <>
-                <p className="text-[13px] font-medium text-white/80">
+                <p className="text-[13px] font-medium text-muted-fg">
                   Vistas totales
                 </p>
-                <p className="mt-1 text-[34px] leading-none font-semibold tracking-[-0.02em] tabular-nums text-white">
+                <p className="mt-1 text-[34px] leading-none font-semibold tracking-[-0.02em] tabular-nums text-ink">
                   <AnimatedNumber value={totals.views} format={formatNumber} />
                 </p>
-                <p className="mt-2 text-sm text-white/85">
+                <p className="mt-2 text-sm text-muted-fg">
                   <AnimatedNumber
                     value={totals.followers}
                     format={formatNumber}
@@ -278,7 +269,7 @@ export function Dashboard() {
                 </p>
                 <div className="mt-3 flex items-center gap-2">
                   {viewsDelta ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-1 text-xs font-semibold text-white">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-xs font-semibold text-primary-text">
                       {viewsDelta.startsWith("+") ? (
                         <ArrowUpRight
                           className="h-3.5 w-3.5"
@@ -293,30 +284,30 @@ export function Dashboard() {
                       {viewsDelta} este periodo
                     </span>
                   ) : (
-                    <span className="inline-flex items-center rounded-full bg-white/20 px-2.5 py-1 text-xs font-semibold text-white">
+                    <span className="inline-flex items-center rounded-full bg-control px-2.5 py-1 text-xs font-semibold text-muted-fg">
                       Línea base
                     </span>
                   )}
                 </div>
                 {lastCaptureDate ? (
-                  <p className="mt-2 text-xs text-white/70">
+                  <p className="mt-2 text-xs text-muted-fg">
                     Última captura: {formatDateShort(lastCaptureDate)}
                   </p>
                 ) : null}
               </>
             ) : (
               <>
-                <p className="text-[15px] font-semibold text-white">
+                <p className="text-[15px] font-semibold text-ink">
                   Todavía no hay métricas
                 </p>
-                <p className="mt-1 text-sm text-white/85">
+                <p className="mt-1 text-sm text-muted-fg">
                   Registra tu primera captura y el resumen aparece aquí.
                 </p>
                 <div className="mt-4">
                   <button
                     type="button"
                     onClick={() => openScreen("metricas")}
-                    className="flex h-10 cursor-pointer items-center rounded-full bg-white px-4 text-sm font-semibold text-ink transition-opacity duration-200 ease-apple hover:opacity-85"
+                    className="flex h-10 cursor-pointer items-center rounded-full bg-primary px-4 text-sm font-semibold text-white transition-opacity duration-200 ease-apple hover:opacity-85"
                   >
                     Registrar captura
                   </button>

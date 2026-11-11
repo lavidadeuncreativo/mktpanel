@@ -14,6 +14,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { NETWORK_LABELS } from "@/lib/types";
 import type { MetricSnapshot, Network } from "@/lib/types";
 import { formatDateShort, formatNumber } from "@/lib/store";
 
@@ -23,6 +24,7 @@ export const NETWORK_COLORS: Record<Network, string> = {
   instagram: "#e1306c",
   tiktok: "#1c1917",
   youtube: "#dc2626",
+  threads: "#737373",
 };
 
 const SERIES_COLORS = NETWORK_COLORS;
@@ -101,13 +103,7 @@ export function FollowersArea({
           <Tooltip
             formatter={(value, name) => [
               formatNumber(Number(value)),
-              name === "facebook"
-                ? "Facebook"
-                : name === "instagram"
-                  ? "Instagram"
-                  : name === "tiktok"
-                    ? "TikTok"
-                    : "YouTube",
+              NETWORK_LABELS[name as Network] ?? String(name),
             ]}
             labelFormatter={(label) => formatDateShort(String(label))}
             contentStyle={TOOLTIP_STYLE}
@@ -186,7 +182,7 @@ export function ViewsBars({
     .sort((a, b) => a.date.localeCompare(b.date))
     .map((s) => ({
       date: s.date,
-      label: `${s.network === "facebook" ? "Facebook" : s.network === "instagram" ? "Instagram" : s.network === "tiktok" ? "TikTok" : "YouTube"} ${formatDateShort(s.date)}`,
+      label: `${NETWORK_LABELS[s.network]} ${formatDateShort(s.date)}`,
       views: s.views,
     }));
 
@@ -284,12 +280,13 @@ export function ViewsLine({
     instagram?: number;
     tiktok?: number;
     youtube?: number;
+    threads?: number;
   }[];
 }) {
   const networks = Array.from(
     new Set(
       series.flatMap((row) =>
-        (["facebook", "instagram", "tiktok", "youtube"] as Network[]).filter(
+        (["facebook", "instagram", "tiktok", "youtube", "threads"] as Network[]).filter(
           (k) => typeof row[k] === "number",
         ),
       ),
@@ -321,13 +318,7 @@ export function ViewsLine({
           <Tooltip
             formatter={(value, name) => [
               formatNumber(Number(value)),
-              name === "facebook"
-                ? "Facebook"
-                : name === "instagram"
-                  ? "Instagram"
-                  : name === "tiktok"
-                    ? "TikTok"
-                    : "YouTube",
+              NETWORK_LABELS[name as Network] ?? String(name),
             ]}
             labelFormatter={(label) => formatDateShort(String(label))}
             contentStyle={TOOLTIP_STYLE}

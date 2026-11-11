@@ -14,7 +14,7 @@ import { ViewsBars, FollowersArea } from "../charts";
 import { CsvImport } from "../CsvImport";
 import { AnimatedNumber, Button, Dialog, EmptyState, Field, Input, Pill, SectionHeading, Select, Stagger, StaggerItem } from "../ui";
 
-const NETWORKS: Network[] = ["facebook", "instagram", "tiktok", "youtube"];
+const NETWORKS: Network[] = ["facebook", "instagram", "tiktok", "youtube", "threads"];
 
 function SnapshotForm({
   onClose,

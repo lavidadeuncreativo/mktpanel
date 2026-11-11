@@ -25,6 +25,7 @@ import {
   Select,
   Stagger,
   StaggerItem,
+  Textarea,
 } from "../ui";
 
 /** Color de cada estado del pipeline. Lo usa también el Calendario,
@@ -65,6 +66,8 @@ function ContentForm({
   );
   const [publishDate, setPublishDate] = useState(initial?.publishDate ?? "");
   const [sound, setSound] = useState(initial?.sound ?? "");
+  const [script, setScript] = useState(initial?.script ?? "");
+  const [copy, setCopy] = useState(initial?.copy ?? "");
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,6 +82,8 @@ function ContentForm({
         publishDate: publishDate || null,
         dayIndex: day === "" ? null : Number(day),
         sound: sound.trim() || undefined,
+        script: script.trim() || undefined,
+        copy: copy.trim() || undefined,
       };
       const content = initial
         ? ws.content.map((c) => (c.id === initial.id ? item : c))
@@ -137,6 +142,26 @@ function ContentForm({
           value={sound}
           onChange={(e) => setSound(e.target.value)}
           placeholder="Nombre del sonido o audio…"
+        />
+      </Field>
+      <Field
+        label="Guion"
+        hint="Opcional: el guion de narración. El agente lo genera con tu clave de IA («genera el guion de …») y lo guarda aquí; también puedes escribirlo a mano."
+      >
+        <Textarea
+          value={script}
+          onChange={(e) => setScript(e.target.value)}
+          placeholder="Guion del Reel…"
+        />
+      </Field>
+      <Field
+        label="Copy"
+        hint="Opcional: caption + hashtags para publicar. El agente lo genera con tu clave de IA («genera el copy de …»)."
+      >
+        <Textarea
+          value={copy}
+          onChange={(e) => setCopy(e.target.value)}
+          placeholder="Copy del Reel…"
         />
       </Field>
       <div className="flex justify-end gap-2 pt-1">

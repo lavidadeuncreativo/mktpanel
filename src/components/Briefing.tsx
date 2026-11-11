@@ -17,8 +17,10 @@ import {
 } from "@/lib/briefing";
 
 /* ------------------------------------------------------------------ */
-/* El briefing de Hoy: la tarjeta de vidrio del héroe que le dice a    */
-/* Isra qué pasó, qué toca hoy, cómo va la semana y una recomendación.  */
+/* El briefing de Hoy: la tarjeta BLANCA y sólida del héroe que le    */
+/* dice a Isra qué pasó, qué toca hoy, cómo va la semana y una         */
+/* recomendación. Antes era vidrio (transparente sobre el degradado)   */
+/* y no se leía bien: ahora es blanca como las tarjetas de abajo.      */
 /* Se calcula en cada render desde el store (buildBriefing): nada se   */
 /* guarda en estado, así que al cambiar de espacio el texto se vuelve  */
 /* a derivar y nunca se queda colgado en el espacio anterior.           */
@@ -30,7 +32,7 @@ function BriefingActionButton({ action }: { action: BriefingAction }) {
     <button
       type="button"
       onClick={() => openScreen(action.screen)}
-      className="mt-3 flex h-9 cursor-pointer items-center rounded-full border border-white/40 bg-white/10 px-4 text-sm font-semibold text-white backdrop-blur-sm transition-colors duration-200 ease-apple hover:bg-white/20"
+      className="mt-3 flex h-9 cursor-pointer items-center rounded-full border border-line bg-card px-4 text-sm font-semibold text-primary transition-colors duration-200 ease-apple hover:bg-black/[0.03]"
     >
       {action.label}
     </button>
@@ -49,14 +51,14 @@ function BriefingCell({
   action: BriefingAction;
 }) {
   return (
-    <div className="flex flex-col rounded-[14px] border border-white/20 bg-white/10 p-4 backdrop-blur-md">
-      <p className="flex items-center gap-2 text-[13px] font-semibold text-white/80">
-        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/15 text-white">
+    <div className="flex flex-col rounded-[14px] border border-line bg-page p-4">
+      <p className="flex items-center gap-2 text-[13px] font-semibold text-muted-fg">
+        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-control text-muted-fg">
           {icon}
         </span>
         {label}
       </p>
-      <div className="mt-2 flex-1 space-y-1.5 text-[15px] leading-snug text-white">
+      <div className="mt-2 flex-1 space-y-1.5 text-[15px] leading-snug text-ink">
         {children}
       </div>
       <BriefingActionButton action={action} />
@@ -100,14 +102,14 @@ function BriefingView({ b }: { b: BriefingData }) {
   return (
     <div
       aria-label="Briefing del día"
-      className="glass mt-6 rounded-[16px] p-4 sm:p-5"
+      className="surface mt-6 p-4 sm:p-5"
     >
       <div className="flex flex-wrap items-baseline justify-between gap-2 px-1">
-        <p className="flex items-center gap-2 text-[15px] font-semibold text-white">
-          <Sparkles className="h-4 w-4" aria-hidden="true" />
+        <p className="flex items-center gap-2 text-[15px] font-semibold text-ink">
+          <Sparkles className="h-4 w-4 text-primary" aria-hidden="true" />
           Tu briefing de hoy
         </p>
-        <p className="text-sm text-white/80">{b.dateLine}</p>
+        <p className="text-sm text-muted-fg">{b.dateLine}</p>
       </div>
 
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -129,7 +131,7 @@ function BriefingView({ b }: { b: BriefingData }) {
           <p className="font-semibold">{b.today.headline}</p>
           {b.today.detail ? <p>{b.today.detail}</p> : null}
           {b.today.hasTasks ? (
-            <p className="text-white/85">
+            <p className="text-muted-fg">
               {b.today.pendingTasks > 0
                 ? `Te quedan ${b.today.pendingTasks} pendientes de la lista.`
                 : "La lista de pendientes está al día."}
@@ -156,7 +158,7 @@ function BriefingView({ b }: { b: BriefingData }) {
               .
             </p>
           )}
-          <p className="text-white/85">Semana del {b.week.range}.</p>
+          <p className="text-muted-fg">Semana del {b.week.range}.</p>
         </BriefingCell>
 
         <BriefingCell
@@ -168,7 +170,7 @@ function BriefingView({ b }: { b: BriefingData }) {
         </BriefingCell>
       </div>
 
-      <p className="mt-3 px-1 text-xs text-white/60">
+      <p className="mt-3 px-1 text-xs text-muted-fg">
         En {b.wsShort}, con los datos que ya tienes guardados aquí.
       </p>
     </div>

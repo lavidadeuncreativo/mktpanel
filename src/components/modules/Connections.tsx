@@ -5,9 +5,11 @@ import {
   AlertTriangle,
   Camera,
   CheckCircle2,
+  KeyRound,
   Link2,
   RefreshCw,
   Share2,
+  Sparkles,
   Unplug,
 } from "lucide-react";
 import { usePanel } from "../panel-context";
@@ -26,6 +28,16 @@ import {
   type MetaConnectionState,
   type MetaPage,
 } from "@/lib/meta";
+import {
+  AiApiError,
+  DEFAULT_AI_BASE_URL,
+  DEFAULT_AI_MODEL,
+  clearAiConfig,
+  loadAiConfig,
+  saveAiConfig,
+  testAiConnection,
+  type AiConfig,
+} from "@/lib/ai";
 import {
   Button,
   Field,
@@ -75,6 +87,232 @@ function formatSyncTime(iso: string): string {
     hour: "2-digit",
     minute: "2-digit",
   }).format(d);
+}
+
+/**
+ * Inteligencia artificial: la clave de OpenAI para que el agente
+ * genere guiones y copys dentro del panel.
+ *
+ * La clave se guarda SOLO en localStorage de este navegador (nunca en
+ * el repo) y solo se envía a la API del proveedor desde el navegador,
+ * cuando se genera algo. "Probar conexión" manda un prompt mínimo y
+ * muestra si la clave funciona, en español llano.
+ */
+function AiConnectionSection() {
+  const [key, setKey] = useState(() => loadAiConfig()?.key ?? "");
+  const [model, setModel] = useState(
+    () => loadAiConfig()?.model ?? DEFAULT_AI_MODEL,
+  );
+  const [baseUrl, setBaseUrl] = useState(
+    () => loadAiConfig()?.baseUrl ?? DEFAULT_AI_BASE_URL,
+  );
+  const [configured, setConfigured] = useState(() => loadAiConfig() !== null);
+  const [testing, setTesting] = useState(false);
+  const [testOk, setTestOk] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const save = () => {
+    const k = key.trim();
+    if (!k) {
+      setError("Pega primero tu clave de API.");
+      setTestOk(false);
+      return;
+    }
+    saveAiConfig(k, model, baseUrl);
+    setConfigured(true);
+    setError(null);
+    setTestOk(false);
+  };
+
+  const test = async () => {
+    const k = key.trim();
+    if (!k) {
+      setError("Pega primero tu clave de API.");
+      setTestOk(false);
+      return;
+    }
+    const config: AiConfig = {
+      provider: "openai",
+      key: k,
+      model: model.trim() || DEFAULT_AI_MODEL,
+      baseUrl: (baseUrl.trim() || DEFAULT_AI_BASE_URL).replace(/\/+$/, ""),
+    };
+    saveAiConfig(config.key, config.model, config.baseUrl);
+    setConfigured(true);
+    setTesting(true);
+    setError(null);
+    setTestOk(false);
+    try {
+      await testAiConnection(config);
+      setTestOk(true);
+    } catch (e) {
+      setError(
+        e instanceof AiApiError
+          ? e.message
+          : "No se pudo probar la conexión. Inténtalo de nuevo.",
+      );
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  const remove = () => {
+    if (
+      !window.confirm(
+        "¿Borrar la clave de IA? El agente dejará de generar guiones y copys hasta que pegues otra.",
+      )
+    ) {
+      return;
+    }
+    clearAiConfig();
+    setKey("");
+    setModel(DEFAULT_AI_MODEL);
+    setBaseUrl(DEFAULT_AI_BASE_URL);
+    setConfigured(false);
+    setTestOk(false);
+    setError(null);
+  };
+
+  return (
+    <div className="surface p-5 sm:p-6">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <span className="flex h-11 w-11 items-center justify-center rounded-[12px] bg-ink text-white">
+            <Sparkles className="h-5 w-5" aria-hidden="true" />
+          </span>
+          <div>
+            <h2 className="text-base font-semibold tracking-[-0.01em] text-ink">
+              Inteligencia artificial
+            </h2>
+            <p className="text-sm text-muted-fg">
+              {configured
+                ? `Conectada · modelo ${model.trim() || DEFAULT_AI_MODEL}`
+                : "Sin configurar"}
+            </p>
+          </div>
+        </div>
+        {configured ? (
+          <Pill tone="green">
+            <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
+            Clave guardada
+          </Pill>
+        ) : (
+          <Pill tone="neutral">Sin configurar</Pill>
+        )}
+      </div>
+
+      <p className="mt-4 text-sm text-muted-fg">
+        Con tu clave, el agente del panel genera el guion y el copy de un
+        Reel aquí mismo. La clave se guarda solo en este navegador
+        (localStorage): nunca se sube al repo ni sale de aquí, solo se
+        envía a la API del proveedor (OpenAI) desde tu navegador cuando
+        generas algo. La clave nunca se muestra en pantalla.
+      </p>
+
+      <div className="mt-5 space-y-4">
+        <Field label="Proveedor" hint="Por ahora solo OpenAI.">
+          <Input value="openai" disabled aria-label="Proveedor" />
+        </Field>
+
+        <Field
+          label="Clave de API"
+          hint={
+            configured
+              ? "Clave guardada en este navegador. Si deja de funcionar, pega una nueva y guárdala."
+              : "Se guarda solo en este navegador. Consíguela en platform.openai.com → API keys."
+          }
+        >
+          <div className="flex gap-2">
+            <Input
+              type="password"
+              value={key}
+              onChange={(e) => {
+                setKey(e.target.value);
+                setConfigured(false);
+                setTestOk(false);
+              }}
+              placeholder="sk-…"
+              autoComplete="off"
+              spellCheck={false}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={save}
+              className="shrink-0"
+            >
+              <KeyRound className="h-4 w-4" aria-hidden="true" />
+              Guardar clave
+            </Button>
+          </div>
+        </Field>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Modelo" hint="Por defecto, gpt-4o-mini.">
+            <Input
+              value={model}
+              onChange={(e) => {
+                setModel(e.target.value);
+                setTestOk(false);
+              }}
+              placeholder={DEFAULT_AI_MODEL}
+              autoComplete="off"
+              spellCheck={false}
+            />
+          </Field>
+          <Field
+            label="URL base (opcional)"
+            hint="Solo si usas otro servidor compatible."
+          >
+            <Input
+              value={baseUrl}
+              onChange={(e) => {
+                setBaseUrl(e.target.value);
+                setTestOk(false);
+              }}
+              placeholder={DEFAULT_AI_BASE_URL}
+              autoComplete="off"
+              spellCheck={false}
+            />
+          </Field>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={test} disabled={testing}>
+            <Link2 className="h-4 w-4" aria-hidden="true" />
+            {testing ? "Probando…" : "Probar conexión"}
+          </Button>
+          {configured ? (
+            <Button variant="ghost" onClick={remove}>
+              <Unplug className="h-4 w-4" aria-hidden="true" />
+              Borrar clave
+            </Button>
+          ) : null}
+        </div>
+
+        {testOk ? (
+          <p className="flex items-start gap-1.5 text-sm text-accent-text">
+            <CheckCircle2
+              className="mt-0.5 h-4 w-4 shrink-0"
+              aria-hidden="true"
+            />
+            La clave funciona: la API respondió bien. Ya puedes pedirle
+            guiones y copys al agente.
+          </p>
+        ) : null}
+
+        {error ? (
+          <p className="flex items-start gap-1.5 text-sm text-danger-text">
+            <AlertTriangle
+              className="mt-0.5 h-4 w-4 shrink-0"
+              aria-hidden="true"
+            />
+            {error}
+          </p>
+        ) : null}
+      </div>
+    </div>
+  );
 }
 
 export function Connections() {
@@ -527,6 +765,9 @@ export function Connections() {
           ) : null}
         </div>
       </div>
+
+      {/* Inteligencia artificial: clave para generar guiones y copys */}
+      <AiConnectionSection />
 
       {/* Cómo conseguir el token */}
       <div className="surface p-5 sm:p-6">

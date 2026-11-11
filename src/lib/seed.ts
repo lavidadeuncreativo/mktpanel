@@ -199,7 +199,7 @@ export const PENDING_REELS_2026_11_11: ContentItem[] = [
   {
     id: "seed-reel-canibal",
     title: "El Club Caníbal de Facebook",
-    status: "imagenes",
+    status: "edicion",
     views: null,
     publishDate: null,
     dayIndex: null,

@@ -1,5 +1,5 @@
 export type WorkspaceId = "evym" | "antojo" | "personal";
-export type Network = "facebook" | "instagram" | "tiktok" | "youtube";
+export type Network = "facebook" | "instagram" | "tiktok" | "youtube" | "threads";
 export type ContentStatus =
   | "idea"
   | "guion"
@@ -43,6 +43,12 @@ export interface ContentItem {
    *  inventa un sonido. Sirve para que el panel recomiende sonidos a
    *  partir de lo que funcionó. */
   sound?: string;
+  /** Guion generado por la IA del panel (clave en Conexiones), si se
+   *  guardó. Se edita en el diálogo de Contenido; nunca se inventa. */
+  script?: string;
+  /** Copy generado por la IA del panel (caption + hashtags), si se
+   *  guardó. Se edita en el diálogo de Contenido; nunca se inventa. */
+  copy?: string;
 }
 
 export interface Idea {
@@ -125,6 +131,17 @@ export const NETWORK_LABELS: Record<Network, string> = {
   instagram: "Instagram",
   tiktok: "TikTok",
   youtube: "YouTube",
+  threads: "Threads",
+};
+
+/** El universo de cuentas de Israel, por espacio: las redes que
+ *  realmente tiene cada marca. TikTok y Threads todavía no tienen
+ *  capturas registradas: sus huecos muestran "Sin datos todavía" y
+ *  nunca un 0 inventado. YouTube no está en el universo todavía. */
+export const UNIVERSE_NETWORKS: Record<WorkspaceId, Network[]> = {
+  evym: ["instagram", "facebook", "tiktok", "threads"],
+  antojo: ["instagram", "facebook", "tiktok", "threads"],
+  personal: ["instagram", "threads"],
 };
 
 export const STATUS_LABELS: Record<ContentStatus, string> = {

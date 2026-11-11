@@ -163,10 +163,10 @@ export function metricSeries(
 /** Views per date, one series per network, for the line chart. */
 export function viewsSeriesByNetwork(
   snapshots: MetricSnapshot[],
-): { date: string; facebook?: number; instagram?: number; tiktok?: number; youtube?: number }[] {
+): { date: string; facebook?: number; instagram?: number; tiktok?: number; youtube?: number; threads?: number }[] {
   const byDate = new Map<
     string,
-    { date: string; facebook?: number; instagram?: number; tiktok?: number; youtube?: number }
+    { date: string; facebook?: number; instagram?: number; tiktok?: number; youtube?: number; threads?: number }
   >();
   for (const s of snapshots) {
     const row = byDate.get(s.date) ?? { date: s.date };
