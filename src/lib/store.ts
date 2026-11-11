@@ -5,6 +5,7 @@ import {
   EVYM_LOG_2026_11_11,
   FB_SNAPSHOT_2026_11_11,
   IG_SNAPSHOT_2026_11_11,
+  PENDING_REELS_2026_11_11,
   PERSONAL_IG_SNAPSHOT_2026_11_11,
   PERSONAL_LOG_2026_11_11,
   REEL_VIEWS_2026_11_11,
@@ -145,6 +146,14 @@ export function migratePanelData(data: PanelData): PanelData {
   });
   if (migratedContent.some((item, i) => item !== evym.content[i])) {
     evym = { ...evym, content: migratedContent };
+  }
+  // The three scripted Reels waiting for images (11 nov): append any
+  // missing one by id, never touch the rest of the pipeline.
+  const missingReels = PENDING_REELS_2026_11_11.filter(
+    (r) => !evym.content.some((c) => c.id === r.id),
+  );
+  if (missingReels.length > 0) {
+    evym = { ...evym, content: [...evym.content, ...missingReels] };
   }
   apply("evym", evym);
 

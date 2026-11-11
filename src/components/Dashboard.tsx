@@ -14,6 +14,7 @@ import {
   Users,
 } from "lucide-react";
 import { usePanel } from "./panel-context";
+import { Briefing } from "./Briefing";
 import type { WorkspaceId } from "@/lib/types";
 import { STATUS_LABELS, WEEK_DAYS } from "@/lib/types";
 import {
@@ -316,6 +317,11 @@ export function Dashboard() {
             </div>
           </div>
         </div>
+
+        {/* El briefing de Jarvis: qué pasó, qué toca hoy, cómo va la
+            semana y una recomendación — todo derivado del store en cada
+            render. Vive dentro del héroe, en vidrio, sobre el degradado. */}
+        <Briefing ws={ws} wsId={wsId} iso={iso} />
       </section>
 
       {/* ---------- Resumen + 4 tarjetas de métricas ---------- */}

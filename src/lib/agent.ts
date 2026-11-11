@@ -105,7 +105,7 @@ function wsShort(wsId: WorkspaceId): string {
   return WORKSPACES.find((w) => w.id === wsId)?.short ?? wsId;
 }
 
-const NEXT_STEP_LABEL: Record<string, string> = {
+export const NEXT_STEP_LABEL: Record<string, string> = {
   idea: "Escribe el guion",
   guion: "Prepara las imágenes",
   imagenes: "Edita el video",

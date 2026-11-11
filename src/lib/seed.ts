@@ -1,4 +1,5 @@
 import type {
+  ContentItem,
   LogEntry,
   MetricSnapshot,
   TaskItem,
@@ -187,8 +188,43 @@ export const PERSONAL_LOG_2026_11_11: LogEntry[] = [
 ];
 
 /**
+ * The three Reels already scripted and waiting for images (11 nov 2026).
+ * Unscheduled on purpose: no publish date, no weekday — they show in
+ * Contenido's pipeline and in Calendario's "Sin fecha". Nothing about
+ * their stage is invented: all three finished their Farid-style script
+ * and are waiting on the image set.
+ */
+export const PENDING_REELS_2026_11_11: ContentItem[] = [
+  {
+    id: "seed-reel-canibal",
+    title: "El Club Caníbal de Facebook",
+    status: "imagenes",
+    views: null,
+    publishDate: null,
+    dayIndex: null,
+  },
+  {
+    id: "seed-reel-josue",
+    title: "El caso Josué (La Mano Peluda)",
+    status: "imagenes",
+    views: null,
+    publishDate: null,
+    dayIndex: null,
+  },
+  {
+    id: "seed-reel-parque-delta",
+    title: "El Secreto Escondido en Parque Delta",
+    status: "imagenes",
+    views: null,
+    publishDate: null,
+    dayIndex: null,
+  },
+];
+
+/**
  * Real seed data: 10 nov 2026 manual capture plus the 11 nov 2026 live
- * Meta captures. Nothing here is invented. Antojo and the personal profile
+ * Meta captures, and the three Reels already scripted and waiting for
+ * images. Nothing here is invented. Antojo and the personal profile
  * now carry their real 11 nov snapshots (Facebook + Instagram for Antojo,
  * Instagram for personal); their content, ideas and anecdotes stay empty.
  */
@@ -212,6 +248,7 @@ export function seedEvym(): WorkspaceData {
         publishDate: "2026-11-10",
         dayIndex: 1, // Tuesday
       },
+      ...PENDING_REELS_2026_11_11,
     ],
     ideas: [],
     anecdotes: [],
