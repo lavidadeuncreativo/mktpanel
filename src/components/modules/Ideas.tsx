@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { usePanel } from "../panel-context";
 import type { Idea, WorkspaceId } from "@/lib/types";
+import { WORKSPACES } from "@/lib/types";
 import { formatDateShort, todayIso, uid } from "@/lib/store";
 import {
   Button,
@@ -18,15 +19,18 @@ import {
 
 function IdeaForm({
   workspaceId,
+  showWorkspaceSelect,
   onClose,
 }: {
   workspaceId: WorkspaceId;
+  showWorkspaceSelect?: boolean;
   onClose: () => void;
 }) {
   const { update } = usePanel();
   const [title, setTitle] = useState("");
   const [score, setScore] = useState(7);
   const [notes, setNotes] = useState("");
+  const [targetWs, setTargetWs] = useState<WorkspaceId>(workspaceId);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,13 +44,30 @@ function IdeaForm({
     };
     update((d) => ({
       ...d,
-      [workspaceId]: { ...d[workspaceId], ideas: [...d[workspaceId].ideas, idea] },
+      [targetWs]: {
+        ...d[targetWs],
+        ideas: [...d[targetWs].ideas, idea],
+      },
     }));
     onClose();
   };
 
   return (
     <form onSubmit={submit} className="space-y-4">
+      {showWorkspaceSelect ? (
+        <Field label="Espacio">
+          <Select
+            value={targetWs}
+            onChange={(e) => setTargetWs(e.target.value as WorkspaceId)}
+          >
+            {WORKSPACES.map((w) => (
+              <option key={w.id} value={w.id}>
+                {w.name}
+              </option>
+            ))}
+          </Select>
+        </Field>
+      ) : null}
       <Field label="Tema">
         <Input
           required
@@ -88,46 +109,19 @@ function IdeaForm({
 }
 
 export function Ideas() {
-  const { data, view, update, setModule } = usePanel();
+  const { data, view, update, setModule, setView } = usePanel();
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  if (view === "general") {
-    const all = [
-      ...data.evym.ideas,
-      ...data.antojo.ideas,
-      ...data.personal.ideas,
-    ];
-    return (
-      <div className="space-y-6">
-        <SectionHeading
-          title="Ideas"
-          description="Banco de temas con puntuación, por espacio."
-        />
-        {all.length === 0 ? (
-          <EmptyState
-            title="Sin ideas guardadas"
-            description="Entra a un espacio con el selector de arriba y agrega tu primer tema con su puntuación."
-          />
-        ) : (
-          <p className="text-sm text-muted-fg">
-            Hay {all.length} ideas en total entre tus espacios.
-          </p>
-        )}
-      </div>
-    );
-  }
-
-  const ws = data[view];
-  const sorted = [...ws.ideas].sort((a, b) => b.score - a.score);
-
-  const moveToScript = (idea: Idea) => {
+  // Mover una idea a guion en su propio espacio (o en el espacio
+  // activo, cuando se llama desde la vista por espacio).
+  const moveToScript = (idea: Idea, wsId: WorkspaceId) => {
     update((d) => ({
       ...d,
-      [view]: {
-        ...d[view],
-        ideas: d[view].ideas.filter((i) => i.id !== idea.id),
+      [wsId]: {
+        ...d[wsId],
+        ideas: d[wsId].ideas.filter((i) => i.id !== idea.id),
         content: [
-          ...d[view].content,
+          ...d[wsId].content,
           {
             id: uid(),
             title: idea.title,
@@ -139,16 +133,80 @@ export function Ideas() {
         ],
       },
     }));
+    setView(wsId);
     setModule("contenido");
   };
 
-  const removeIdea = (id: string, title: string) => {
+  const removeIdea = (id: string, title: string, wsId: WorkspaceId) => {
     if (!window.confirm(`¿Borrar la idea “${title}”?`)) return;
     update((d) => ({
       ...d,
-      [view]: { ...d[view], ideas: d[view].ideas.filter((i) => i.id !== id) },
+      [wsId]: { ...d[wsId], ideas: d[wsId].ideas.filter((i) => i.id !== id) },
     }));
   };
+
+  if (view === "general") {
+    // El banco agregado: todas las ideas de los tres espacios, con su
+    // puntuación y su espacio, ordenadas de más a menos fuerte.
+    const all: { idea: Idea; wsId: WorkspaceId }[] = (
+      ["evym", "antojo", "personal"] as WorkspaceId[]
+    ).flatMap((wsId) =>
+      data[wsId].ideas.map((idea) => ({ idea, wsId })),
+    );
+    const sorted = [...all].sort((a, b) => b.idea.score - a.idea.score);
+    return (
+      <div className="space-y-6">
+        <SectionHeading
+          title="Ideas"
+          description="Banco de temas con puntuación, de tus tres espacios. Los mejores pasan directo a guion."
+          action={
+            <Button onClick={() => setDialogOpen(true)}>
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              Agregar idea
+            </Button>
+          }
+        />
+        {sorted.length === 0 ? (
+          <EmptyState
+            title="Sin ideas guardadas"
+            description="Guarda aquí los temas que siguen, con su puntuación del 1 al 10. Cuando uno esté listo, pásalo a guion con un clic."
+            action={
+              <Button onClick={() => setDialogOpen(true)}>
+                Agregar primera idea
+              </Button>
+            }
+          />
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {sorted.map(({ idea, wsId }) => (
+              <IdeaCard
+                key={idea.id}
+                idea={idea}
+                wsId={wsId}
+                onMoveToScript={() => moveToScript(idea, wsId)}
+                onRemove={() => removeIdea(idea.id, idea.title, wsId)}
+              />
+            ))}
+          </div>
+        )}
+
+        <Dialog
+          open={dialogOpen}
+          onClose={() => setDialogOpen(false)}
+          title="Agregar idea"
+        >
+          <IdeaForm
+            workspaceId="evym"
+            showWorkspaceSelect
+            onClose={() => setDialogOpen(false)}
+          />
+        </Dialog>
+      </div>
+    );
+  }
+
+  const ws = data[view];
+  const sorted = [...ws.ideas].sort((a, b) => b.score - a.score);
 
   return (
     <div className="space-y-6">
@@ -176,49 +234,13 @@ export function Ideas() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {sorted.map((idea) => (
-            <article
+            <IdeaCard
               key={idea.id}
-              className="surface flex flex-col p-5"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <p className="text-3xl leading-none font-semibold tracking-[-0.02em] text-ink">
-                  {idea.score}
-                  <span className="text-base font-medium text-muted-fg">
-                    /10
-                  </span>
-                </p>
-                <button
-                  type="button"
-                  onClick={() => removeIdea(idea.id, idea.title)}
-                  aria-label={`Borrar la idea ${idea.title}`}
-                  className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full text-muted-fg transition-colors duration-200 ease-apple hover:bg-danger-soft hover:text-danger"
-                >
-                  <Trash2 className="h-4 w-4" aria-hidden="true" />
-                </button>
-              </div>
-              <h3 className="mt-3 text-base font-semibold tracking-[-0.01em] text-ink">
-                {idea.title}
-              </h3>
-              {idea.notes ? (
-                <p className="mt-1 flex-1 text-sm text-muted-fg">
-                  {idea.notes}
-                </p>
-              ) : (
-                <p className="mt-1 flex-1 text-sm text-muted-fg">
-                  Sin notas.
-                </p>
-              )}
-              <p className="mt-3 text-xs text-muted-fg">
-                Guardada el {formatDateShort(idea.createdAt)}
-              </p>
-              <Button
-                variant="outline"
-                className="mt-3 w-full"
-                onClick={() => moveToScript(idea)}
-              >
-                Pasar a guion
-              </Button>
-            </article>
+              idea={idea}
+              wsId={view}
+              onMoveToScript={() => moveToScript(idea, view)}
+              onRemove={() => removeIdea(idea.id, idea.title, view)}
+            />
           ))}
         </div>
       )}
@@ -231,5 +253,52 @@ export function Ideas() {
         <IdeaForm workspaceId={view} onClose={() => setDialogOpen(false)} />
       </Dialog>
     </div>
+  );
+}
+
+/** Una tarjeta de idea: puntuación grande, tema, notas y su espacio. */
+function IdeaCard({
+  idea,
+  wsId,
+  onMoveToScript,
+  onRemove,
+}: {
+  idea: Idea;
+  wsId: WorkspaceId;
+  onMoveToScript: () => void;
+  onRemove: () => void;
+}) {
+  const meta = WORKSPACES.find((w) => w.id === wsId);
+  return (
+    <article className="surface flex flex-col p-5">
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-3xl leading-none font-semibold tracking-[-0.02em] text-ink">
+          {idea.score}
+          <span className="text-base font-medium text-muted-fg">/10</span>
+        </p>
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label={`Borrar la idea ${idea.title}`}
+          className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full text-muted-fg transition-colors duration-200 ease-apple hover:bg-danger-soft hover:text-danger"
+        >
+          <Trash2 className="h-4 w-4" aria-hidden="true" />
+        </button>
+      </div>
+      <h3 className="mt-3 text-base font-semibold tracking-[-0.01em] text-ink">
+        {idea.title}
+      </h3>
+      {idea.notes ? (
+        <p className="mt-1 flex-1 text-sm text-muted-fg">{idea.notes}</p>
+      ) : (
+        <p className="mt-1 flex-1 text-sm text-muted-fg">Sin notas.</p>
+      )}
+      <p className="mt-3 text-xs text-muted-fg">
+        {meta?.short ?? wsId} · Guardada el {formatDateShort(idea.createdAt)}
+      </p>
+      <Button variant="outline" className="mt-3 w-full" onClick={onMoveToScript}>
+        Pasar a guion
+      </Button>
+    </article>
   );
 }

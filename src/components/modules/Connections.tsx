@@ -13,8 +13,8 @@ import {
   Unplug,
 } from "lucide-react";
 import { usePanel } from "../panel-context";
-import type { MetricSnapshot, WorkspaceId } from "@/lib/types";
-import { WORKSPACES } from "@/lib/types";
+import type { MetricSnapshot, Network, WorkspaceId } from "@/lib/types";
+import { NETWORK_LABELS, WORKSPACES } from "@/lib/types";
 import { todayIso, uid } from "@/lib/store";
 import {
   clearMetaConnection,
@@ -316,7 +316,7 @@ function AiConnectionSection() {
 }
 
 export function Connections() {
-  const { update } = usePanel();
+  const { data, update, openScreen } = usePanel();
   // Estado inicial perezoso: lee localStorage solo en el cliente. La
   // vista solo se renderiza tras la hidratación (no es la pantalla
   // inicial), así que no hay riesgo de desajuste con el prerender.
@@ -517,6 +517,84 @@ export function Connections() {
         title="Conexiones"
         description="Sincroniza las métricas reales de Facebook e Instagram con Meta. El token se guarda solo en este navegador; nunca sale de aquí."
       />
+
+      {/* Estado de integración por red: qué está conectado, qué falta
+          para conectar cada una, y cómo registrar a mano mientras
+          tanto. Nada se inventa: una red sin datos lo dice tal cual. */}
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {(
+          [
+            {
+              network: "facebook" as Network,
+              needs:
+                "Token de Meta de la app Panel EVYM: pégalo en la tarjeta de Meta de abajo y pulsa Probar conexión.",
+            },
+            {
+              network: "instagram" as Network,
+              needs:
+                "Va con la misma conexión de Meta: la cuenta vinculada a tu Página. No necesita otro token.",
+            },
+            {
+              network: "threads" as Network,
+              needs:
+                "La API de Threads va por la misma app de Meta, pero el panel aún no sincroniza Threads solo: registra sus métricas a mano.",
+            },
+            {
+              network: "tiktok" as Network,
+              needs:
+                "Necesita su propia app de desarrollador y la API de TikTok para Empresas. El panel aún no la conecta: registra sus métricas a mano.",
+            },
+            {
+              network: "youtube" as Network,
+              needs:
+                "Necesita un proyecto en Google Cloud y la API de datos de YouTube. El panel aún no la conecta: registra sus métricas a mano.",
+            },
+          ]
+        ).map(({ network, needs }) => {
+          const hasData = (["evym", "antojo", "personal"] as WorkspaceId[]).some(
+            (id) => data[id].snapshots.some((s) => s.network === network),
+          );
+          const metaConnected =
+            (network === "facebook" || network === "instagram") &&
+            conn !== null;
+          const status = metaConnected
+            ? { tone: "green" as const, label: "Conectado" }
+            : hasData
+              ? { tone: "blue" as const, label: "Con datos" }
+              : {
+                  tone: "neutral" as const,
+                  label:
+                    network === "facebook" || network === "instagram"
+                      ? "Sin conectar"
+                      : "Sin conexión automática",
+                };
+          return (
+            <div key={network} className="surface flex flex-col p-5">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-3">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-control text-[15px] font-bold text-ink">
+                    {NETWORK_LABELS[network].charAt(0)}
+                  </span>
+                  <h2 className="text-base font-semibold tracking-[-0.01em] text-ink">
+                    {NETWORK_LABELS[network]}
+                  </h2>
+                </div>
+                <Pill tone={status.tone}>{status.label}</Pill>
+              </div>
+              <p className="mt-3 flex-1 text-sm text-muted-fg">{needs}</p>
+              <div className="mt-4">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => openScreen("metricas")}
+                >
+                  Registrar captura
+                </Button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
 
       {/* Meta */}
       <div className="surface p-5 sm:p-6">
@@ -815,30 +893,6 @@ export function Connections() {
           nuevo. El token de la Página que usa el panel no caduca mientras
           el token de usuario siga vigente.
         </p>
-      </div>
-
-      {/* Próximamente: TikTok y YouTube */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="surface p-5">
-          <h2 className="text-base font-semibold tracking-[-0.01em] text-ink">
-            TikTok
-          </h2>
-          <p className="mt-1 text-sm text-muted-fg">
-            Próximamente: necesita su propia app de desarrollador y la API
-            de TikTok para Empresas. Por ahora, registra sus métricas a mano
-            en Métricas.
-          </p>
-        </div>
-        <div className="surface p-5">
-          <h2 className="text-base font-semibold tracking-[-0.01em] text-ink">
-            YouTube
-          </h2>
-          <p className="mt-1 text-sm text-muted-fg">
-            Próximamente: necesita un proyecto en Google Cloud y la API de
-            datos de YouTube. Por ahora, registra sus métricas a mano en
-            Métricas.
-          </p>
-        </div>
       </div>
 
       <p className="text-xs text-muted-fg">

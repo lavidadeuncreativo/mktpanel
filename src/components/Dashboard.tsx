@@ -16,7 +16,7 @@ import {
 import { usePanel } from "./panel-context";
 import { Briefing } from "./Briefing";
 import { GeneralDashboard } from "./GeneralDashboard";
-import type { WorkspaceId } from "@/lib/types";
+import type { WorkspaceId, WorkspaceStrategy } from "@/lib/types";
 import { STATUS_LABELS, WEEK_DAYS } from "@/lib/types";
 import {
   nextSuggestedIdea,
@@ -26,6 +26,7 @@ import {
   weeklyProgress,
   workspaceTotals,
 } from "@/lib/derive";
+import { buildPlan, getStrategy, planHeader } from "@/lib/strategy";
 import {
   formatDateShort,
   formatDeltaPct,
@@ -37,9 +38,13 @@ import { ViewsBars } from "./charts";
 import {
   AnimatedNumber,
   Button,
+  Dialog,
   EmptyState,
+  Field,
   Pill,
   Progress,
+  Select,
+  Textarea,
 } from "./ui";
 import { cn } from "./cn";
 
@@ -165,6 +170,13 @@ export function Dashboard() {
   // Fechas reales de captura, para el selector de periodo del Resumen.
   const captureDates = [...new Set(ws.snapshots.map((s) => s.date))].sort();
   const [overviewDate, setOverviewDate] = useState("all");
+  const [strategyDialogOpen, setStrategyDialogOpen] = useState(false);
+
+  // Tu plan y tu estrategia (solo en el Hoy por espacio; en General
+  // manda el bento). Derivados del store en cada render.
+  const strategy = getStrategy(ws, wsId);
+  const plan = buildPlan(ws, wsId, iso);
+  const planHead = planHeader(ws, wsId);
   const overviewSnapshots =
     overviewDate === "all"
       ? ws.snapshots
@@ -217,39 +229,32 @@ export function Dashboard() {
 
   return (
     <div className="space-y-4">
-      {/* ---------- Héroe: el degradado animado ya es el fondo de la
-           página en Hoy (ver page.tsx); aquí solo van el saludo grande,
-           las acciones y la tarjeta de resumen BLANCA y sólida. ---------- */}
-      <section aria-label="Resumen del día" className="relative px-2 pt-4 pb-6 text-white sm:px-4">
+      {/* ---------- Héroe: saludo grande, acciones y la tarjeta de
+           resumen BLANCA y sólida, sobre el fondo limpio de la página. ---------- */}
+      <section aria-label="Resumen del día" className="relative px-2 pt-4 pb-6 sm:px-4">
         <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0">
-            <p className="text-sm font-medium text-white/80">
+            <p className="text-sm font-medium text-muted-fg">
               Esto es lo que tienes hoy en {wsName}.
             </p>
-            <h2 className="mt-1 text-[52px] leading-[1.05] font-semibold tracking-[-0.02em] text-white sm:text-[56px]">
+            <h2 className="mt-1 text-[52px] leading-[1.05] font-semibold tracking-[-0.02em] text-ink sm:text-[56px]">
               Hola, Isra
             </h2>
             <div className="mt-5 flex flex-wrap gap-2.5">
-              <button
-                type="button"
-                onClick={() => openScreen("contenido")}
-                className="flex h-11 cursor-pointer items-center gap-2 rounded-full bg-white px-5 text-[15px] font-semibold text-ink transition-opacity duration-200 ease-apple hover:opacity-85"
-              >
+              <Button onClick={() => openScreen("contenido")}>
                 <Clapperboard className="h-4 w-4" aria-hidden="true" />
                 Nuevo Reel
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                variant="outline"
                 onClick={() => openScreen("metricas")}
-                className="flex h-11 cursor-pointer items-center gap-2 rounded-full border border-white/40 bg-white/10 px-5 text-[15px] font-semibold text-white transition-colors duration-200 ease-apple hover:bg-white/20"
               >
                 Registrar captura
-              </button>
+              </Button>
             </div>
           </div>
 
-          {/* Tarjeta de resumen BLANCA y sólida sobre el degradado
-              (antes era vidrio transparente y no se leía bien). */}
+          {/* Tarjeta de resumen BLANCA y sólida. */}
           <div className="relative w-full max-w-[320px] shrink-0">
             <div className="surface p-5">
             {hasSnapshots ? (
@@ -320,9 +325,78 @@ export function Dashboard() {
 
         {/* El briefing de Jarvis: qué pasó, qué toca hoy, cómo va la
             semana y una recomendación — todo derivado del store en cada
-            render. Vive dentro del héroe, en vidrio, sobre el degradado. */}
+            render. Tarjeta blanca y sólida, como el resto. */}
         <Briefing ws={ws} wsId={wsId} iso={iso} />
       </section>
+
+      {/* ---------- Tu plan + tu estrategia: qué sigue, en orden ---------- */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div className="surface p-5 lg:col-span-2">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h3 className="text-base font-semibold tracking-[-0.01em] text-ink">
+              Tu plan
+            </h3>
+            <p className="text-sm text-muted-fg">
+              Meta: {planHead.cadence} Reels por semana ·{" "}
+              {planHead.published} publicados esta semana
+            </p>
+          </div>
+          <ol className="mt-4 space-y-3">
+            {plan.map((step, i) => (
+              <li key={step.id} className="flex items-start gap-3">
+                <span
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-ink text-[13px] font-bold text-white"
+                  aria-hidden="true"
+                >
+                  {i + 1}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[15px] leading-snug font-semibold text-ink">
+                    {step.title}
+                  </p>
+                  {step.detail ? (
+                    <p className="mt-0.5 text-sm text-muted-fg">
+                      {step.detail}
+                    </p>
+                  ) : null}
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => openScreen(step.screen)}
+                >
+                  {step.cta}
+                </Button>
+              </li>
+            ))}
+          </ol>
+        </div>
+
+        <div className="surface flex flex-col p-5">
+          <h3 className="text-base font-semibold tracking-[-0.01em] text-ink">
+            Tu estrategia
+          </h3>
+          <p className="mt-2 text-[15px] leading-snug font-semibold text-ink">
+            {strategy.goal}
+          </p>
+          <p className="mt-1 flex-1 text-sm text-muted-fg">
+            {strategy.focus}
+          </p>
+          <p className="mt-3 text-sm text-muted-fg">
+            Ritmo:{" "}
+            <span className="font-semibold text-ink">
+              {strategy.cadencePerWeek} Reels por semana
+            </span>
+          </p>
+          <Button
+            variant="outline"
+            className="mt-4 w-full"
+            onClick={() => setStrategyDialogOpen(true)}
+          >
+            Editar estrategia
+          </Button>
+        </div>
+      </div>
 
       {/* ---------- Resumen + 4 tarjetas de métricas ---------- */}
       <div className="grid gap-4 lg:grid-cols-3">
@@ -581,6 +655,96 @@ export function Dashboard() {
           aria-hidden="true"
         />
       </button>
+
+      <Dialog
+        open={strategyDialogOpen}
+        onClose={() => setStrategyDialogOpen(false)}
+        title="Editar estrategia"
+      >
+        <StrategyForm
+          initial={strategy}
+          onSave={(next) => {
+            update((d) => ({
+              ...d,
+              [wsId]: { ...d[wsId], strategy: next },
+            }));
+            setStrategyDialogOpen(false);
+          }}
+          onClose={() => setStrategyDialogOpen(false)}
+        />
+      </Dialog>
     </div>
+  );
+}
+
+/** Formulario de estrategia: meta, ritmo y enfoque de este espacio.
+ *  Cada cuenta tiene la suya; se guarda en el store. */
+function StrategyForm({
+  initial,
+  onSave,
+  onClose,
+}: {
+  initial: WorkspaceStrategy;
+  onSave: (s: WorkspaceStrategy) => void;
+  onClose: () => void;
+}) {
+  const [goal, setGoal] = useState(initial.goal);
+  const [cadence, setCadence] = useState(initial.cadencePerWeek);
+  const [focus, setFocus] = useState(initial.focus);
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!goal.trim() || !focus.trim()) return;
+    onSave({
+      goal: goal.trim(),
+      cadencePerWeek: cadence,
+      focus: focus.trim(),
+    });
+  };
+
+  return (
+    <form onSubmit={submit} className="space-y-4">
+      <Field
+        label="Meta"
+        hint="Qué quiere lograr esta cuenta, en una frase."
+      >
+        <Textarea
+          value={goal}
+          onChange={(e) => setGoal(e.target.value)}
+          placeholder="Crecer la comunidad…"
+        />
+      </Field>
+      <Field
+        label="Ritmo"
+        hint="Reels por semana que te propones publicar."
+      >
+        <Select
+          value={cadence}
+          onChange={(e) => setCadence(Number(e.target.value))}
+        >
+          {[1, 2, 3, 4, 5, 6, 7].map((n) => (
+            <option key={n} value={n}>
+              {n} por semana
+            </option>
+          ))}
+        </Select>
+      </Field>
+      <Field
+        label="Enfoque"
+        hint="En qué se concentra el contenido de esta cuenta."
+      >
+        <Textarea
+          value={focus}
+          onChange={(e) => setFocus(e.target.value)}
+          placeholder="Un caso under por día…"
+        />
+      </Field>
+      <div className="flex justify-end gap-2 pt-1">
+        <Button type="button" variant="outline" onClick={onClose}>
+          Cancelar
+        </Button>
+        <Button type="submit">Guardar estrategia</Button>
+      </div>
+    </form>
   );
 }

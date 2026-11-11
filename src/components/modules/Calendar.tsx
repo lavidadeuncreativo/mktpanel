@@ -236,6 +236,35 @@ export function Calendar() {
           </p>
         </StaggerItem>
 
+        {/* Sin fecha, ARRIBA: lo que está en producción sin día es lo
+            primero que hay que ver — antes estaba debajo de la rejilla
+            y había que scrollear para encontrarlo. */}
+        {unscheduled.length > 0 ? (
+          <StaggerItem className="surface p-5">
+            <h2 className="text-base font-semibold tracking-[-0.01em] text-ink">
+              Sin fecha
+            </h2>
+            <p className="mt-0.5 mb-3 text-sm text-muted-fg">
+              Estos Reels no tienen día ni fecha de publicación. Toca uno
+              para asignárselos en Contenido.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {unscheduled.map(({ item, ws }) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => focusContent(item.id, ws)}
+                  className="cursor-pointer"
+                >
+                  <Pill tone={statusTone(item.status)}>
+                    {item.title} · {STATUS_LABELS[item.status]}
+                  </Pill>
+                </button>
+              ))}
+            </div>
+          </StaggerItem>
+        ) : null}
+
         {/* Rejilla del mes */}
         <StaggerItem className="surface p-5">
           <h2 className="text-[17px] font-semibold tracking-[-0.01em] text-ink">
@@ -282,6 +311,11 @@ export function Calendar() {
                     {d.getDate()}
                   </p>
                   <div className="mt-1.5 space-y-1">
+                    {shown.length === 0 && inMonth ? (
+                      <p className="px-1.5 text-[11px] text-muted-fg/50">
+                        Libre
+                      </p>
+                    ) : null}
                     {shown.map(({ item, ws }) => (
                       <button
                         key={item.id}
@@ -326,33 +360,6 @@ export function Calendar() {
             ))}
           </div>
         </StaggerItem>
-
-        {/* Sin fecha: existen, pero sin día ni fecha de publicación */}
-        {unscheduled.length > 0 ? (
-          <StaggerItem className="surface p-5">
-            <h2 className="text-base font-semibold tracking-[-0.01em] text-ink">
-              Sin fecha
-            </h2>
-            <p className="mt-0.5 mb-3 text-sm text-muted-fg">
-              Estos Reels no tienen día ni fecha de publicación. Toca uno
-              para asignárselos en Contenido.
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {unscheduled.map(({ item, ws }) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => focusContent(item.id, ws)}
-                  className="cursor-pointer"
-                >
-                  <Pill tone={statusTone(item.status)}>
-                    {item.title} · {STATUS_LABELS[item.status]}
-                  </Pill>
-                </button>
-              ))}
-            </div>
-          </StaggerItem>
-        ) : null}
 
         {/* Espacio vacío: el calendario es real, pero no hay nada que poner */}
         {allItems.length === 0 ? (

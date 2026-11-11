@@ -8,11 +8,13 @@ import {
   STATUS_LABELS,
   STATUS_ORDER,
   WEEK_DAYS,
+  WORKSPACES,
 } from "@/lib/types";
 import { statusCounts, todayDayIndex, weeklyProgress } from "@/lib/derive";
 import { formatDateShort, formatNumber, uid } from "@/lib/store";
 import { WeekPlan } from "../WeekPlan";
 import { useTodayIso } from "../useToday";
+import { cn } from "../cn";
 import {
   Button,
   Dialog,
@@ -177,10 +179,19 @@ function ContentForm({
 }
 
 export function Content() {
-  const { data, view, update, focusedContentId, clearContentFocus } =
-    usePanel();
+  const {
+    data,
+    view,
+    update,
+    focusContent,
+    focusedContentId,
+    clearContentFocus,
+  } = usePanel();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<ContentItem | null>(null);
+  // En la vista general el diálogo de "Agregar Reel" necesita saber a
+  // qué espacio va: cada grupo tiene su propio botón.
+  const [dialogWs, setDialogWs] = useState<WorkspaceId | null>(null);
   const today = todayDayIndex(useTodayIso());
 
   // El Calendario pide abrir un Reel: se deriva del foco, sin efectos.
@@ -202,27 +213,120 @@ export function Content() {
   };
 
   if (view === "general") {
-    const all = [
-      ...data.evym.content,
-      ...data.antojo.content,
-      ...data.personal.content,
-    ];
-    const published = all.filter((c) => c.status === "publicado").length;
+    // El pipeline agregado de los tres espacios, agrupado por cuenta:
+    // cada Reel se ve con su estado, día y vistas, y tocarlo lo abre
+    // en su espacio para editarlo.
+    const ids = ["evym", "antojo", "personal"] as WorkspaceId[];
+    const totalPublished = ids.reduce(
+      (s, id) =>
+        s + data[id].content.filter((c) => c.status === "publicado").length,
+      0,
+    );
     return (
       <div className="space-y-6">
         <SectionHeading
           title="Contenido"
-          description="Pipeline de los 7 Reels semanales por espacio."
+          description={`Pipeline de tus tres espacios: ${totalPublished} publicados en total, de la idea a publicado.`}
         />
-        <div className="surface p-5">
-          <p className="text-2xl font-semibold tracking-[-0.02em] text-ink">
-            {published} publicados
-          </p>
-          <p className="mt-1 text-sm text-muted-fg">
-            En total, entre tus tres espacios. Entra a un espacio con el
-            selector de arriba para gestionar su pipeline.
-          </p>
-        </div>
+        <Stagger>
+          {ids.map((wsId) => {
+            const ws = data[wsId];
+            const meta = WORKSPACES.find((w) => w.id === wsId);
+            const published = ws.content.filter(
+              (c) => c.status === "publicado",
+            ).length;
+            const sorted = [...ws.content].sort(
+              (a, b) => (a.dayIndex ?? 99) - (b.dayIndex ?? 99),
+            );
+            return (
+              <StaggerItem key={wsId} className="surface p-5">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <h2 className="text-base font-semibold tracking-[-0.01em] text-ink">
+                    {meta?.name ?? wsId}
+                  </h2>
+                  <div className="flex items-center gap-3">
+                    <p className="text-sm text-muted-fg">
+                      {published} publicados · {ws.content.length} en pipeline
+                    </p>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setDialogWs(wsId);
+                        setEditing(null);
+                        setDialogOpen(true);
+                      }}
+                    >
+                      <Plus className="h-4 w-4" aria-hidden="true" />
+                      Agregar Reel
+                    </Button>
+                  </div>
+                </div>
+                {sorted.length === 0 ? (
+                  <p className="mt-3 text-sm text-muted-fg">
+                    Sin Reels todavía en este espacio.
+                  </p>
+                ) : (
+                  <ul className="mt-2">
+                    {sorted.map((c, i) => (
+                      <li
+                        key={c.id}
+                        className={cn(
+                          "flex items-center gap-3 py-3",
+                          i > 0 && "border-t border-line/70",
+                        )}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => focusContent(c.id, wsId)}
+                          aria-label={`Editar ${c.title} en ${meta?.name ?? wsId}`}
+                          className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 text-left"
+                        >
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-[15px] font-medium text-ink">
+                              {c.title}
+                            </span>
+                            <span className="block text-[13px] text-muted-fg">
+                              {c.dayIndex !== null
+                                ? WEEK_DAYS[c.dayIndex]
+                                : "Sin asignar"}
+                              {c.publishDate
+                                ? ` · ${formatDateShort(c.publishDate)}`
+                                : ""}
+                            </span>
+                          </span>
+                          <span className="shrink-0 text-right text-[15px] font-semibold text-ink">
+                            {c.views !== null
+                              ? formatNumber(c.views)
+                              : "Sin datos"}
+                            <span className="block text-xs font-normal text-muted-fg">
+                              vistas
+                            </span>
+                          </span>
+                          <Pill tone={statusTone(c.status)}>
+                            {STATUS_LABELS[c.status]}
+                          </Pill>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </StaggerItem>
+            );
+          })}
+        </Stagger>
+
+        <Dialog
+          open={dialogIsOpen}
+          onClose={closeDialog}
+          title={dialogItem ? "Editar Reel" : "Agregar Reel"}
+        >
+          <ContentForm
+            initial={dialogItem}
+            workspaceId={dialogWs ?? "evym"}
+            onClose={closeDialog}
+          />
+        </Dialog>
       </div>
     );
   }

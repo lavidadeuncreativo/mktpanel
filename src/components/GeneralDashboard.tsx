@@ -22,9 +22,9 @@ import {
 } from "@/lib/derive";
 import {
   buildAlerts,
+  currentWeek,
   formatDayLong,
   nextPublishSlot,
-  nextSevenDays,
   weekdayIndex,
   parseIso,
   type TopReel,
@@ -249,7 +249,12 @@ function NextSlotCard({
   );
 }
 
-/* -------------------- 3. Próximos 7 días -------------------- */
+/* -------------------- 3. Esta semana -------------------- */
+
+/* La semana en curso (lunes a domingo): los Reels publicados el lunes
+   y el martes ya aparecen en su día, y lo que sigue en producción se
+   ve ahí mismo. La tira anterior ("próximos 7 días" desde hoy) dejaba
+   todos los días "Libres" aunque la semana ya tuviera Reels. */
 
 function NextSevenDaysCard({
   data,
@@ -259,15 +264,15 @@ function NextSevenDaysCard({
   iso: string;
 }) {
   const { focusContent, openScreen } = usePanel();
-  const plan = nextSevenDays(data, iso);
+  const plan = currentWeek(data, iso);
   const first = plan.days[0];
   const last = plan.days[plan.days.length - 1];
 
   return (
-    <article aria-label="Próximos 7 días" className="surface p-3.5 md:col-span-2">
+    <article aria-label="Esta semana" className="surface p-3.5 md:col-span-2">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h3 className="text-[17px] font-semibold tracking-[-0.01em] text-ink">
-          Próximos 7 días
+          Esta semana
         </h3>
         <p className="text-[14px] text-muted-fg">
           {formatDateShort(first.iso)} – {formatDateShort(last.iso)}
@@ -467,28 +472,23 @@ export function GeneralDashboard() {
   return (
     <div className="flex flex-col gap-2.5">
       {/* ---------- 1. La línea de Jarvis: el resumen en lenguaje llano ---------- */}
-      <section aria-label="Resumen general" className="relative px-1 pt-1 text-white sm:px-2">
+      <section aria-label="Resumen general" className="relative px-1 pt-1 sm:px-2">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <p className="min-w-0 flex-1 text-[24px] leading-[1.28] font-semibold tracking-[-0.02em] text-white">
+          <p className="min-w-0 flex-1 text-[24px] leading-[1.28] font-semibold tracking-[-0.02em] text-ink">
             Hola, Isra. {jarvis.sentences.join(" ")}
           </p>
           <div className="flex shrink-0 gap-2.5">
-            <button
-              type="button"
-              onClick={() => openScreen("contenido")}
-              className="flex h-11 cursor-pointer items-center gap-2 rounded-full bg-white px-5 text-[15px] font-semibold text-ink transition-opacity duration-200 ease-apple hover:opacity-85"
-            >
+            <Button onClick={() => openScreen("contenido")}>
               <Clapperboard className="h-4 w-4" aria-hidden="true" />
               Nuevo Reel
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="outline"
               onClick={() => openScreen("agente")}
-              className="flex h-11 cursor-pointer items-center gap-2 rounded-full border border-white/40 bg-white/10 px-5 text-[15px] font-semibold text-white transition-colors duration-200 ease-apple hover:bg-white/20"
             >
               <Sparkles className="h-4 w-4" aria-hidden="true" />
               Pregúntale al agente
-            </button>
+            </Button>
           </div>
         </div>
       </section>
@@ -501,7 +501,7 @@ export function GeneralDashboard() {
         <NextSlotCard data={data} iso={iso} />
       </div>
 
-      {/* ---------- 3. Próximos 7 días + Qué publicar ---------- */}
+      {/* ---------- 3. Esta semana + Qué publicar ---------- */}
       <div className="grid gap-2.5 md:grid-cols-3">
         <NextSevenDaysCard data={data} iso={iso} />
         <RecommendationsCompact />

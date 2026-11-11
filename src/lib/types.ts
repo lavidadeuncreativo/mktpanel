@@ -87,6 +87,21 @@ export interface LogEntry {
   source: string;
 }
 
+/** Estrategia de un espacio: qué quiere lograr, con qué ritmo y con
+ *  qué enfoque. Cada cuenta tiene la suya: EVYM no es Antojo y Antojo
+ *  no es el perfil personal. Se guarda en el store y se edita desde
+ *  Hoy; sin estrategia guardada, el panel usa la sugerencia inicial
+ *  de strategy.ts (nunca se inventa una métrica, solo una meta que el
+ *  usuario puede cambiar). */
+export interface WorkspaceStrategy {
+  /** Qué quiere lograr esta cuenta (una frase). */
+  goal: string;
+  /** Reels por semana que se propone publicar. */
+  cadencePerWeek: number;
+  /** En qué se concentra el contenido de esta cuenta. */
+  focus: string;
+}
+
 export interface WorkspaceData {
   snapshots: MetricSnapshot[];
   content: ContentItem[];
@@ -94,6 +109,8 @@ export interface WorkspaceData {
   anecdotes: Anecdote[];
   tasks: TaskItem[];
   log: LogEntry[];
+  /** Estrategia propia del espacio; ausente = sugerencia inicial. */
+  strategy?: WorkspaceStrategy;
 }
 
 export type PanelData = Record<WorkspaceId, WorkspaceData>;

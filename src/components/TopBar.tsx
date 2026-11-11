@@ -19,9 +19,8 @@ import { cn } from "./cn";
  * Barra superior (reemplaza a la barra lateral): marca a la izquierda,
  * buscador al centro como pieza principal, selector de espacio a la
  * derecha, y debajo la fila de secciones en píldoras con scroll
- * horizontal. Como la barra de la referencia fintech, pero con nuestro
- * degradado naranja: en Hoy va transparente sobre el degradado, con
- * texto blanco; en las demás pantallas, sobre el papel claro.
+ * horizontal. Fondo sólido estilo Apple (#F5F5F7) en todas las
+ * pantallas: sin degradados, sin transparencias.
  */
 
 interface SearchHit {
@@ -126,10 +125,6 @@ export function TopBar() {
   const [open, setOpen] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
 
-  // En Hoy la barra va sobre el degradado animado (como la barra
-  // superior de la referencia): fondo transparente y texto blanco.
-  const onGradient = screen === "hoy";
-
   // "General" vuelve a ofrecerse: ahora sí es un resumen agregado de
   // verdad (antes era EVYM disfrazado y por eso se había quitado). En
   // General el buscador busca en las tres cuentas y la línea de estado
@@ -181,14 +176,7 @@ export function TopBar() {
   }, []);
 
   return (
-    <header
-      className={cn(
-        "sticky top-0 z-30 shrink-0 border-b backdrop-blur-xl",
-        onGradient
-          ? "border-white/20 bg-transparent"
-          : "border-line bg-page/85",
-      )}
-    >
+    <header className="sticky top-0 z-30 shrink-0 border-b border-line bg-page">
       {/* Fila 1: marca | buscador | espacio */}
       <div className="flex min-h-14 flex-wrap items-center gap-x-4 gap-y-2 px-4 pt-2 sm:px-6 lg:px-8">
         <button
@@ -205,20 +193,10 @@ export function TopBar() {
             EV
           </span>
           <span className="min-w-0 text-left">
-            <span
-              className={cn(
-                "block text-[15px] leading-tight font-semibold tracking-[-0.01em]",
-                onGradient ? "text-white" : "text-ink",
-              )}
-            >
+            <span className="block text-[15px] leading-tight font-semibold tracking-[-0.01em] text-ink">
               Panel
             </span>
-            <span
-              className={cn(
-                "block text-xs",
-                onGradient ? "text-white/75" : "text-muted-fg",
-              )}
-            >
+            <span className="block text-xs text-muted-fg">
               Marketing de contenido
             </span>
           </span>
@@ -230,10 +208,7 @@ export function TopBar() {
         >
           <div className="relative">
             <Search
-              className={cn(
-                "pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2",
-                onGradient ? "text-white/70" : "text-muted-fg",
-              )}
+              className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-muted-fg"
               aria-hidden="true"
             />
             <input
@@ -246,12 +221,7 @@ export function TopBar() {
               onFocus={() => setOpen(true)}
               placeholder="Buscar Reels, ideas, anécdotas…"
               aria-label="Buscar en el panel"
-              className={cn(
-                "h-10 w-full rounded-full border pr-4 pl-10 text-[14px] transition-colors duration-200 ease-apple focus:outline-none",
-                onGradient
-                  ? "border-white/30 bg-white/15 text-white placeholder:text-white/70 focus:border-white focus:bg-white/20"
-                  : "border-line bg-control text-ink placeholder:text-muted-fg/80 focus:border-primary focus:bg-card",
-              )}
+              className="h-10 w-full rounded-full border border-line bg-control pr-4 pl-10 text-[14px] text-ink transition-colors duration-200 ease-apple placeholder:text-muted-fg/80 focus:border-primary focus:bg-card focus:outline-none"
             />
           </div>
           {open && query.trim().length >= 2 ? (
@@ -303,12 +273,7 @@ export function TopBar() {
             onChange={(id) => setView(id)}
             ariaLabel="Espacio de trabajo"
           />
-          <p
-            className={cn(
-              "mt-1 text-right text-xs leading-none",
-              onGradient ? "text-white/75" : "text-muted-fg",
-            )}
-          >
+          <p className="mt-1 text-right text-xs leading-none text-muted-fg">
             {activeLabel}
             {hasData
               ? ` · ${formatNumber(totals.views)} vistas`
@@ -333,12 +298,8 @@ export function TopBar() {
               className={cn(
                 "min-h-9 shrink-0 cursor-pointer rounded-full px-3.5 text-sm font-medium whitespace-nowrap transition-colors duration-150",
                 active
-                  ? onGradient
-                    ? "bg-white text-[#991b1b] shadow-[0_1px_4px_rgba(28,25,23,0.25)]"
-                    : "bg-ink text-white"
-                  : onGradient
-                    ? "text-white/85 hover:bg-white/15 hover:text-white"
-                    : "text-muted-fg hover:bg-black/[0.03] hover:text-ink",
+                  ? "bg-ink text-white"
+                  : "text-muted-fg hover:bg-black/[0.03] hover:text-ink",
               )}
             >
               {SCREEN_TITLES[id]}

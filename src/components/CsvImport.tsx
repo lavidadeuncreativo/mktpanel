@@ -434,7 +434,7 @@ export function CsvImport({
       <div>
         <label
           htmlFor="csv-file"
-          className="flex cursor-pointer flex-col items-center gap-2 rounded-[16px] border border-dashed border-line bg-card/60 px-4 py-6 text-center transition-colors duration-200 ease-apple hover:border-primary"
+          className="flex cursor-pointer flex-col items-center gap-2 rounded-[16px] border border-dashed border-line bg-card px-4 py-6 text-center transition-colors duration-200 ease-apple hover:border-primary"
         >
           <FileSpreadsheet
             className="h-6 w-6 text-muted-fg"

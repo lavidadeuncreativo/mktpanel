@@ -107,6 +107,59 @@ export function buildAlerts(data: PanelData): UniverseAlerts {
   };
 }
 
+/* ------------------------- Esta semana ------------------------- */
+
+/** La semana actual (lunes a domingo), para que los Reels ya
+ *  publicados esta semana aparezcan en la tira: la tira de "próximos
+ *  7 días" empezaba hoy y todos sus días se veían "Libres" aunque el
+ *  lunes y el martes ya tuvieran Reels. Misma forma que
+ *  nextSevenDays, pero anclada al lunes de la semana en curso. */
+export function currentWeek(data: PanelData, iso: string): NextSevenDays {
+  const today = parseIso(iso);
+  const monday = new Date(today);
+  monday.setDate(monday.getDate() - weekdayIndex(today));
+  const mondayIso = isoOf(monday);
+
+  const days: DayPlan[] = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(d.getDate() + i);
+    const dateIso = isoOf(d);
+    return {
+      iso: dateIso,
+      dayIndex: weekdayIndex(d),
+      label: WEEK_DAYS[weekdayIndex(d)],
+      isToday: dateIso === iso,
+      items: [] as { wsId: WorkspaceId; item: ContentItem }[],
+    };
+  });
+  const byIso = new Map(days.map((d) => [d.iso, d]));
+
+  const inProduction: { wsId: WorkspaceId; item: ContentItem }[] = [];
+  for (const wsId of WORKSPACE_IDS) {
+    for (const item of data[wsId].content) {
+      const date = itemDateISO(item, mondayIso);
+      // Un Reel publicado antes de esta semana ya salió.
+      if (item.status === "publicado" && date && date < mondayIso) continue;
+      if (date && byIso.has(date)) {
+        byIso.get(date)?.items.push({ wsId, item });
+      } else if (item.status !== "publicado") {
+        inProduction.push({ wsId, item });
+      }
+    }
+  }
+  // Lo más avanzado primero: edición, imágenes, guion, idea.
+  inProduction.sort(
+    (a, b) =>
+      STATUS_ORDER.indexOf(b.item.status) - STATUS_ORDER.indexOf(a.item.status),
+  );
+
+  return {
+    days,
+    inProduction,
+    freeDays: days.filter((d) => d.items.length === 0),
+  };
+}
+
 /* ------------------------- Próximos 7 días ------------------------- */
 
 export interface DayPlan {

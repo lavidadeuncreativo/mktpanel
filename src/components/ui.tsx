@@ -8,14 +8,8 @@ import {
   type TextareaHTMLAttributes,
   useEffect,
   useRef,
-  useState,
 } from "react";
-import {
-  motion,
-  useMotionValue,
-  useMotionValueEvent,
-  useSpring,
-} from "framer-motion";
+import { motion } from "framer-motion";
 import { ChevronRight, X } from "lucide-react";
 import { cn } from "./cn";
 
@@ -66,9 +60,13 @@ export function StaggerItem({
   );
 }
 
-/* ---------- Cifra animada: la cifra sube con un muelle al cambiar ----------
-   Respeta reduced motion (MotionConfig hace que el muelle salte al
-   valor final). `format` es el formateo existente (formatNumber). */
+/* ---------- Cifra: el valor final, directo, sin animación ----------
+   Antes era un count-up con muelle que empezaba en 0 en cada montaje:
+   al navegar entre pestañas las cifras se veían a mitad de camino y
+   cambiaban en cada visita (4,314 / 15,753 / 14,748 para el mismo
+   dato). Las métricas muestran su valor final real desde el primer
+   render, siempre idéntico. `format` es el formateo existente
+   (formatNumber). */
 
 export function AnimatedNumber({
   value,
@@ -77,19 +75,7 @@ export function AnimatedNumber({
   value: number;
   format?: (n: number) => string;
 }) {
-  const mv = useMotionValue(0);
-  const spring = useSpring(mv, { stiffness: 120, damping: 20 });
-  const [text, setText] = useState(format(0));
-
-  useEffect(() => {
-    mv.set(value);
-  }, [value, mv]);
-
-  useMotionValueEvent(spring, "change", (v) => {
-    setText(format(Math.round(v)));
-  });
-
-  return <span className="tabular-nums">{text}</span>;
+  return <span className="tabular-nums">{format(value)}</span>;
 }
 
 /* ---------- Button: capsule, Apple blue for the primary action ---------- */
@@ -605,7 +591,7 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-start gap-2 rounded-[16px] border border-dashed border-line bg-card/60 px-5 py-8">
+    <div className="flex flex-col items-start gap-2 rounded-[16px] border border-dashed border-line bg-card px-5 py-8">
       <p className="text-base font-semibold tracking-[-0.01em] text-ink">
         {title}
       </p>

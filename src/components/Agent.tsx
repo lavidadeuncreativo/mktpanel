@@ -941,7 +941,7 @@ export function AgentChat() {
       ) : null}
 
       {/* Compositor */}
-      <div className="sticky bottom-0 bg-gradient-to-t from-page via-page to-transparent pt-4 pb-2">
+      <div className="sticky bottom-0 bg-page pt-4 pb-2">
         <form
           onSubmit={(e) => {
             e.preventDefault();

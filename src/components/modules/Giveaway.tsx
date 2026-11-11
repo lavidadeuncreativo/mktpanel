@@ -108,7 +108,7 @@ function AnecdoteForm({ onClose }: { onClose: () => void }) {
           placeholder="Cuéntala como pasó…"
         />
       </Field>
-      <label className="flex min-h-11 cursor-pointer items-start gap-3 rounded-[12px] border border-line bg-card/70 px-3 py-2.5">
+      <label className="flex min-h-11 cursor-pointer items-start gap-3 rounded-[12px] border border-line bg-card px-3 py-2.5">
         <input
           type="checkbox"
           checked={adult}
@@ -300,7 +300,7 @@ export function Giveaway() {
                         ? `Quitar a ${a.title} de finalistas`
                         : `Marcar ${a.title} como finalista`
                     }
-                    className="inline-flex h-11 cursor-pointer items-center gap-1.5 rounded-full border border-line bg-card/70 px-3.5 text-sm font-medium text-ink transition-colors duration-200 ease-apple hover:bg-card"
+                    className="inline-flex h-11 cursor-pointer items-center gap-1.5 rounded-full border border-line bg-card px-3.5 text-sm font-medium text-ink transition-colors duration-200 ease-apple hover:bg-card"
                   >
                     <Star
                       className="h-4 w-4"

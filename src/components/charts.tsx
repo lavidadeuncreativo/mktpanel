@@ -122,7 +122,7 @@ export function FollowersArea({
               dot={{ r: 4, fill: SERIES_COLORS[net], strokeWidth: 0 }}
               activeDot={{ r: 5 }}
               connectNulls
-              animationDuration={600}
+              isAnimationActive={false}
             />
           ))}
         </AreaChart>
@@ -158,7 +158,7 @@ export function NetworkDonut({
             paddingAngle={2}
             stroke="#ffffff"
             strokeWidth={2}
-            animationDuration={600}
+            isAnimationActive={false}
           >
             {data.map((s) => (
               <Cell key={s.network} fill={SERIES_COLORS[s.network]} />
@@ -222,7 +222,7 @@ export function ViewsBars({
           <Bar
             dataKey="views"
             radius={[4, 4, 0, 0]}
-            animationDuration={600}
+            isAnimationActive={false}
           >
             {data.map((d) => (
               <Cell
@@ -259,8 +259,7 @@ export function Sparkline({
             strokeWidth={2}
             fill="none"
             dot={false}
-            isAnimationActive
-            animationDuration={500}
+            isAnimationActive={false}
           />
         </AreaChart>
       </ResponsiveContainer>
@@ -337,7 +336,7 @@ export function ViewsLine({
               dot={{ r: 3.5, fill: SERIES_COLORS[net], strokeWidth: 0 }}
               activeDot={{ r: 5 }}
               connectNulls
-              animationDuration={600}
+              isAnimationActive={false}
             />
           ))}
         </AreaChart>
