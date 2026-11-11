@@ -691,7 +691,7 @@ export function AgentChat() {
     <div className="mx-auto w-full max-w-[760px]">
       {/* Cabecera del agente */}
       <div className="flex items-center gap-3 pb-5">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-ink">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink text-white">
           <Sparkles className="h-5 w-5" aria-hidden="true" />
         </span>
         <div className="min-w-0">
@@ -715,7 +715,7 @@ export function AgentChat() {
               transition={{ duration: 0.18, ease: EASE }}
               className="flex justify-end"
             >
-              <p className="max-w-[85%] rounded-[20px] rounded-br-md bg-primary px-4 py-2.5 text-[15px] leading-relaxed text-[#1c1c1e]">
+              <p className="max-w-[85%] rounded-[20px] rounded-br-md bg-primary px-4 py-2.5 text-[15px] leading-relaxed text-white">
                 {msg.text}
               </p>
             </motion.div>
@@ -727,7 +727,7 @@ export function AgentChat() {
               transition={{ duration: 0.18, ease: EASE }}
               className="flex gap-3"
             >
-              <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-ink">
+              <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink text-white">
                 <Sparkles className="h-4 w-4" aria-hidden="true" />
               </span>
               <div className="min-w-0 flex-1">
@@ -766,7 +766,7 @@ export function AgentChat() {
             transition={{ duration: 0.15 }}
             className="flex gap-3"
           >
-            <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-ink">
+            <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink text-white">
               <Sparkles className="h-4 w-4" aria-hidden="true" />
             </span>
             <TypingDots />
@@ -803,7 +803,7 @@ export function AgentChat() {
             e.preventDefault();
             send(input);
           }}
-          className="flex items-end gap-2 rounded-[24px] border border-line bg-card p-2 pl-4 shadow-[0_8px_24px_rgba(0,0,0,0.4)]"
+          className="flex items-end gap-2 rounded-[24px] border border-line bg-card p-2 pl-4 shadow-[0_8px_24px_rgba(28,25,23,0.10)]"
         >
           <label htmlFor="agent-input" className="sr-only">
             Escribe al agente del panel
@@ -821,7 +821,7 @@ export function AgentChat() {
             type="submit"
             disabled={!input.trim() || typing}
             aria-label="Enviar"
-            className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-primary text-[#1c1c1e] transition-colors duration-150 ease-apple hover:bg-[#ffe14d] disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-primary text-white transition-colors duration-150 ease-apple hover:bg-[#b42318] disabled:cursor-not-allowed disabled:opacity-40"
           >
             <ArrowUp className="h-5 w-5" aria-hidden="true" />
           </button>

@@ -17,30 +17,44 @@ import {
 import type { MetricSnapshot, Network } from "@/lib/types";
 import { formatDateShort, formatNumber } from "@/lib/store";
 
-/** One quiet color per network, tuned to read on near-black. */
+/** One quiet color per network, tuned to read on white. */
 export const NETWORK_COLORS: Record<Network, string> = {
-  facebook: "#5b9dff",
-  instagram: "#e879f9",
-  tiktok: "#f4f4f5",
-  youtube: "#ff453a",
+  facebook: "#1877f2",
+  instagram: "#e1306c",
+  tiktok: "#1c1917",
+  youtube: "#dc2626",
 };
 
 const SERIES_COLORS = NETWORK_COLORS;
 
-const GRID_STROKE = "rgba(255,255,255,0.08)";
-const TICK_FILL = "#8e8e93";
+const GRID_STROKE = "rgba(28,25,23,0.08)";
+const TICK_FILL = "#a8a29e";
 
 const TOOLTIP_STYLE = {
-  backgroundColor: "#1c1c1f",
+  backgroundColor: "#ffffff",
   borderRadius: 10,
-  border: "1px solid rgba(255,255,255,0.12)",
-  boxShadow: "0 12px 32px rgba(0,0,0,0.5)",
+  border: "1px solid rgba(28,25,23,0.10)",
+  boxShadow: "0 12px 32px rgba(28,25,23,0.14)",
   fontSize: 13,
-  color: "#f4f4f5",
+  color: "#1c1917",
 } as const;
 
-const TOOLTIP_LABEL_STYLE = { color: "#f4f4f5" } as const;
-const TOOLTIP_ITEM_STYLE = { color: "#f4f4f5" } as const;
+const TOOLTIP_LABEL_STYLE = { color: "#1c1917" } as const;
+const TOOLTIP_ITEM_STYLE = { color: "#1c1917" } as const;
+
+/** Dark tooltip chip for the Overview bars, like the reference's
+ *  "$1,548.24 for April 2026" chip: dark pill on the light chart. */
+const DARK_TOOLTIP_STYLE = {
+  backgroundColor: "#1c1917",
+  borderRadius: 10,
+  border: "1px solid #1c1917",
+  boxShadow: "0 12px 32px rgba(28,25,23,0.25)",
+  fontSize: 13,
+  color: "#ffffff",
+} as const;
+
+const DARK_TOOLTIP_LABEL_STYLE = { color: "#ffffff" } as const;
+const DARK_TOOLTIP_ITEM_STYLE = { color: "#ffffff" } as const;
 
 /** Followers over time, one series per network. Real captures only. */
 export function FollowersArea({
@@ -146,7 +160,7 @@ export function NetworkDonut({
             innerRadius="62%"
             outerRadius="92%"
             paddingAngle={2}
-            stroke="#141419"
+            stroke="#ffffff"
             strokeWidth={2}
             animationDuration={600}
           >
@@ -160,7 +174,9 @@ export function NetworkDonut({
   );
 }
 
-/** Views per capture, zero-based domain, one bar per capture. */
+/** Views per capture, zero-based domain, one bar per capture.
+ *  Reference language: pale bars, the most recent capture highlighted
+ *  in the warm red accent, dark tooltip chip on hover. */
 export function ViewsBars({
   snapshots,
 }: {
@@ -169,11 +185,14 @@ export function ViewsBars({
   const data = [...snapshots]
     .sort((a, b) => a.date.localeCompare(b.date))
     .map((s) => ({
+      date: s.date,
       label: `${s.network === "facebook" ? "Facebook" : s.network === "instagram" ? "Instagram" : s.network === "tiktok" ? "TikTok" : "YouTube"} ${formatDateShort(s.date)}`,
       views: s.views,
     }));
 
   if (data.length === 0) return null;
+
+  const latestDate = data[data.length - 1].date;
 
   return (
     <div className="h-56 w-full">
@@ -200,16 +219,22 @@ export function ViewsBars({
           />
           <Tooltip
             formatter={(value) => [formatNumber(Number(value)), "Vistas"]}
-            contentStyle={TOOLTIP_STYLE}
-            labelStyle={TOOLTIP_LABEL_STYLE}
-            itemStyle={TOOLTIP_ITEM_STYLE}
+            contentStyle={DARK_TOOLTIP_STYLE}
+            labelStyle={DARK_TOOLTIP_LABEL_STYLE}
+            itemStyle={DARK_TOOLTIP_ITEM_STYLE}
           />
           <Bar
             dataKey="views"
-            fill="#ffd60a"
             radius={[4, 4, 0, 0]}
             animationDuration={600}
-          />
+          >
+            {data.map((d) => (
+              <Cell
+                key={d.label}
+                fill={d.date === latestDate ? "#d92d20" : "#e8e2d8"}
+              />
+            ))}
+          </Bar>
         </BarChart>
       </ResponsiveContainer>
     </div>

@@ -10,6 +10,7 @@ import {
   Lightbulb,
   Link2,
   ListVideo,
+  Sparkles,
 } from "lucide-react";
 import { SCREEN_TITLES, usePanel, type ScreenId } from "./panel-context";
 import { WORKSPACES, type WorkspaceId } from "@/lib/types";
@@ -28,6 +29,7 @@ import { cn } from "./cn";
 
 const NAV: { id: ScreenId; icon: React.ReactNode }[] = [
   { id: "hoy", icon: <Home className="h-[18px] w-[18px]" aria-hidden="true" /> },
+  { id: "agente", icon: <Sparkles className="h-[18px] w-[18px]" aria-hidden="true" /> },
   { id: "contenido", icon: <ListVideo className="h-[18px] w-[18px]" aria-hidden="true" /> },
   { id: "metricas", icon: <BarChart3 className="h-[18px] w-[18px]" aria-hidden="true" /> },
   { id: "ideas", icon: <Lightbulb className="h-[18px] w-[18px]" aria-hidden="true" /> },
@@ -56,7 +58,7 @@ export function Sidebar() {
     <aside className="hidden w-60 shrink-0 flex-col border-r border-line bg-card lg:flex">
       {/* Marca */}
       <div className="flex items-center gap-2.5 px-5 pt-5 pb-4">
-        <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-white text-[13px] font-bold text-ink">
+        <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-ink text-[13px] font-bold text-white">
           EV
         </span>
         <div className="min-w-0">
@@ -104,13 +106,13 @@ export function Sidebar() {
                     "relative flex min-h-10 w-full cursor-pointer items-center gap-3 rounded-lg px-3 text-[14px] transition-colors duration-150",
                     active
                       ? "font-semibold text-ink"
-                      : "font-medium text-muted-fg hover:bg-white/[0.04] hover:text-ink",
+                      : "font-medium text-muted-fg hover:bg-black/[0.03] hover:text-ink",
                   )}
                 >
                   {active ? (
                     <motion.span
                       layoutId="sidebar-active"
-                      className="absolute inset-0 rounded-lg bg-white/[0.06]"
+                      className="absolute inset-0 rounded-lg bg-black/[0.05]"
                       transition={{
                         duration: 0.2,
                         ease: [0.32, 0.72, 0, 1],

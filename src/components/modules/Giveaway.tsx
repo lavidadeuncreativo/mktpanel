@@ -113,7 +113,7 @@ function AnecdoteForm({ onClose }: { onClose: () => void }) {
           type="checkbox"
           checked={adult}
           onChange={(e) => setAdult(e.target.checked)}
-          className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer accent-[#ffd60a]"
+          className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer accent-primary"
         />
         <span className="text-sm text-ink">
           Confirmo que quien participa tiene 18 años o más. El premio es una

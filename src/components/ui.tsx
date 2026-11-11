@@ -103,14 +103,14 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
-  /* Primary: warm yellow with near-black text — the one accent. */
+  /* Primary: warm red with white text — the one accent. */
   default:
-    "bg-primary text-[#1c1c1e] hover:bg-[#ffe14d] active:bg-[#e6bc00]",
+    "bg-primary text-white hover:bg-[#b42318] active:bg-[#991b1b]",
   outline:
-    "border border-line bg-card text-primary hover:bg-white/[0.04] active:bg-white/[0.06]",
-  ghost: "text-primary hover:bg-primary-soft active:bg-white/[0.05]",
-  danger: "bg-danger text-white hover:bg-[#ff5c52] active:bg-[#e0342b]",
-  dark: "bg-white text-ink hover:bg-white/85 active:bg-white/70",
+    "border border-line bg-card text-primary hover:bg-black/[0.03] active:bg-black/[0.05]",
+  ghost: "text-primary hover:bg-primary-soft active:bg-black/[0.04]",
+  danger: "bg-danger text-white hover:bg-[#b91c1c] active:bg-[#991b1b]",
+  dark: "bg-ink text-white hover:bg-ink/85 active:bg-ink/70",
 };
 
 /* The rounding lives in the size: md/sm/icon stay capsule, lg is the big
@@ -241,13 +241,13 @@ type PillTone =
   | "dark";
 
 const PILL_TONES: Record<PillTone, string> = {
-  neutral: "bg-white/[0.07] text-[#d4d4d8]",
+  neutral: "bg-black/[0.05] text-[#57534e]",
   green: "bg-accent-soft text-accent-text",
   red: "bg-danger-soft text-danger-text",
   blue: "bg-primary-soft text-primary-text",
   amber: "bg-amber-soft text-amber-text",
   violet: "bg-violet-soft text-violet-text",
-  dark: "bg-white text-ink",
+  dark: "bg-ink text-white",
 };
 
 export function Pill({
@@ -336,7 +336,7 @@ export function SegmentedControl<T extends string>({
             className={cn(
               "min-h-9 cursor-pointer rounded-full px-3.5 text-sm font-medium whitespace-nowrap transition-all duration-200 ease-apple",
               active
-                ? "bg-white text-ink shadow-[0_1px_4px_rgba(0,0,0,0.5)]"
+                ? "bg-white text-ink shadow-[0_1px_4px_rgba(28,25,23,0.18)]"
                 : "text-muted-fg hover:text-ink",
             )}
           >
@@ -358,12 +358,12 @@ export function SwitchVisual({ checked }: { checked: boolean }) {
       aria-hidden="true"
       className={cn(
         "relative block h-8 w-[52px] shrink-0 rounded-full transition-colors duration-200 ease-apple",
-        checked ? "bg-accent" : "bg-white/15",
+        checked ? "bg-accent" : "bg-black/15",
       )}
     >
       <span
         className={cn(
-          "absolute top-0.5 left-0.5 block h-7 w-7 rounded-full bg-white shadow-[0_1px_4px_rgba(0,0,0,0.4)] transition-transform duration-200 ease-apple",
+          "absolute top-0.5 left-0.5 block h-7 w-7 rounded-full bg-white shadow-[0_1px_4px_rgba(28,25,23,0.25)] transition-transform duration-200 ease-apple",
           checked && "translate-x-5",
         )}
       />
@@ -439,7 +439,7 @@ export function GroupedList({
 export function RowChevron() {
   return (
     <ChevronRight
-      className="h-5 w-5 shrink-0 text-white/30"
+      className="h-5 w-5 shrink-0 text-black/25"
       aria-hidden="true"
     />
   );
@@ -515,7 +515,7 @@ export function GroupedRow({
         onClick={onClick}
         aria-label={ariaLabel}
         className={cn(
-          "flex w-full cursor-pointer items-stretch text-left transition-colors duration-150 ease-apple hover:bg-white/[0.04] active:bg-white/[0.06]",
+          "flex w-full cursor-pointer items-stretch text-left transition-colors duration-150 ease-apple hover:bg-black/[0.03] active:bg-black/[0.05]",
           className,
         )}
       >
@@ -571,7 +571,7 @@ export function Dialog({
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="w-full max-w-lg rounded-[16px] border border-line bg-card p-5 shadow-[0_16px_48px_rgba(0,0,0,0.55)]"
+        className="w-full max-w-lg rounded-[16px] border border-line bg-card p-5 shadow-[0_16px_48px_rgba(28,25,23,0.18)]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">

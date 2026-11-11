@@ -74,6 +74,7 @@ function searchWorkspace(
   }
   const screens: ScreenId[] = [
     "hoy",
+    "agente",
     "metricas",
     "contenido",
     "ideas",
@@ -153,7 +154,7 @@ export function Header() {
             />
           </div>
           {open && query.trim().length >= 2 ? (
-            <div className="absolute inset-x-0 top-12 overflow-hidden rounded-[12px] border border-line bg-card shadow-[0_12px_32px_rgba(0,0,0,0.5)]">
+            <div className="absolute inset-x-0 top-12 overflow-hidden rounded-[12px] border border-line bg-card shadow-[0_12px_32px_rgba(28,25,23,0.14)]">
               {results.length === 0 ? (
                 <p className="px-4 py-3.5 text-sm text-muted-fg">
                   Sin resultados para “{query.trim()}” en este espacio.
@@ -169,7 +170,7 @@ export function Header() {
                           setQuery("");
                           setOpen(false);
                         }}
-                        className="flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-white/[0.04]"
+                        className="flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-black/[0.03]"
                       >
                         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-control text-muted-fg">
                           {hit.icon}
@@ -212,6 +213,7 @@ export function MobileNav() {
 
   const items: { id: ScreenId; label: string }[] = [
     { id: "hoy", label: "Hoy" },
+    { id: "agente", label: "Agente" },
     { id: "metricas", label: "Métricas" },
     { id: "contenido", label: "Contenido" },
     { id: "ideas", label: "Ideas" },
@@ -233,8 +235,8 @@ export function MobileNav() {
               className={cn(
                 "min-h-9 shrink-0 cursor-pointer rounded-full px-3.5 text-sm font-medium whitespace-nowrap transition-colors",
                 active
-                  ? "bg-white text-ink"
-                  : "bg-white/[0.06] text-[#d4d4d8] hover:text-ink",
+                  ? "bg-ink text-white"
+                  : "bg-black/[0.05] text-ink/70 hover:text-ink",
               )}
             >
               {item.label}

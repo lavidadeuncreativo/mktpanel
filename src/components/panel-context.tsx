@@ -31,7 +31,7 @@ export type ModuleId =
   | "pendientes"
   | "bitacora";
 
-export type ScreenId = "hoy" | ModuleId | "conexiones";
+export type ScreenId = "hoy" | ModuleId | "conexiones" | "agente";
 
 export type ViewId = "general" | WorkspaceId;
 
@@ -46,6 +46,7 @@ export const MODULES: { id: ModuleId; label: string }[] = [
 
 export const SCREEN_TITLES: Record<ScreenId, string> = {
   hoy: "Hoy",
+  agente: "Agente",
   metricas: "Métricas",
   contenido: "Contenido",
   ideas: "Ideas",

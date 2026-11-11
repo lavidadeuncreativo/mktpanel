@@ -439,7 +439,7 @@ export function Connections() {
                           "flex w-full cursor-pointer items-center gap-3 rounded-[12px] border px-4 py-3 text-left transition-colors",
                           active
                             ? "border-primary bg-primary-soft"
-                            : "border-line bg-card hover:bg-white/[0.03]",
+                            : "border-line bg-card hover:bg-black/[0.03]",
                         )}
                       >
                         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#1877f2] text-sm font-bold text-white">

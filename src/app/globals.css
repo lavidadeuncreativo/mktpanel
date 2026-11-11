@@ -1,39 +1,40 @@
 @import "tailwindcss";
 
 @theme {
-  /* Dark Metricool-like tokens: near-black page, dark raised surfaces,
-     hairlines in low-opacity white, muted secondary text. */
-  --color-page: #0a0a0c;
-  --color-card: #141419;
-  --color-line: rgb(255 255 255 / 0.09);
-  --color-control: #1f1f25;
-  --color-muted: #1a1a20;
-  --color-muted-fg: #a1a1aa;
+  /* Warm light system (replaces the dark theme): warm paper page, white
+     cards, warm-ink hairlines. The bold color lives in one place only —
+     the animated hero gradient; the rest of the app is quiet white. */
+  --color-page: #faf8f5;
+  --color-card: #ffffff;
+  --color-line: rgb(28 25 23 / 0.08);
+  --color-control: #f3efe9;
+  --color-muted: #efe9e1;
+  --color-muted-fg: #78716c;
 
-  /* Primary text on dark: near-white, not pure white (softer on the eyes). */
-  --color-ink: #f4f4f5;
+  /* Ink: warm near-black, not pure black. */
+  --color-ink: #1c1917;
 
-  /* One warm accent: the yellow CTA energy of the reference. Primary
-     actions are yellow with near-black text; everything else is ink,
+  /* One warm accent: the red end of the hero gradient, and EVYM's red.
+     Primary actions are red with white text; everything else is ink,
      grey, or a soft tint. */
-  --color-primary: #ffd60a;
-  --color-primary-soft: rgb(255 214 10 / 0.12);
-  --color-primary-text: #ffd60a;
+  --color-primary: #d92d20;
+  --color-primary-soft: rgb(217 45 32 / 0.08);
+  --color-primary-text: #b42318;
 
-  /* Semantic tints, Apple dark-mode palette: soft fills, light text,
-     readable on dark (4.5:1 or better against the card). */
-  --color-accent: #30d158;
-  --color-accent-soft: rgb(48 209 88 / 0.14);
-  --color-accent-text: #30d158;
-  --color-danger: #ff453a;
-  --color-danger-soft: rgb(255 69 58 / 0.13);
-  --color-danger-text: #ff6961;
-  --color-amber: #ff9f0a;
-  --color-amber-soft: rgb(255 159 10 / 0.13);
-  --color-amber-text: #ffb340;
-  --color-violet: #bf5af2;
-  --color-violet-soft: rgb(191 90 242 / 0.14);
-  --color-violet-text: #d18cf7;
+  /* Semantic tints, light-mode palette: darker text on white so the
+     small labels still read (4.5:1 or better against the card). */
+  --color-accent: #15803d;
+  --color-accent-soft: rgb(21 128 61 / 0.1);
+  --color-accent-text: #15803d;
+  --color-danger: #dc2626;
+  --color-danger-soft: rgb(220 38 38 / 0.08);
+  --color-danger-text: #b91c1c;
+  --color-amber: #b45309;
+  --color-amber-soft: rgb(180 83 9 / 0.1);
+  --color-amber-text: #92400e;
+  --color-violet: #6d28d9;
+  --color-violet-soft: rgb(109 40 217 / 0.08);
+  --color-violet-text: #5b21b6;
 
   /* System stack: the closest thing to SF Pro on every platform */
   --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text",
@@ -45,7 +46,7 @@
 }
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 html {
@@ -68,7 +69,7 @@ h2 {
   letter-spacing: -0.02em;
 }
 
-/* Visible keyboard focus, always — yellow ring reads on dark */
+/* Visible keyboard focus, always — red ring reads on the warm paper */
 :focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
@@ -76,25 +77,25 @@ h2 {
 }
 
 ::selection {
-  background: rgb(255 214 10 / 0.28);
+  background: rgb(217 45 32 / 0.16);
   color: var(--color-ink);
 }
 
-/* Frosted glass: translucent dark card over the near-black page */
+/* Frosted glass: translucent white card over the gradient hero */
 @layer components {
   .glass {
-    @apply border-line/70 bg-card/70 backdrop-blur-xl;
+    @apply border-white/25 bg-white/15 backdrop-blur-xl;
   }
-  /* La superficie estándar del dashboard: oscura y sólida, borde fino
+  /* La superficie estándar del dashboard: blanca y sólida, borde fino
      a plena opacidad. El borde —no la sombra— define la tarjeta: una
      sombra suave idéntica bajo cada tarjeta es la señal del kit SaaS
      genérico. La sombra queda solo donde hay elevación real
      (desplegables, diálogos). */
   .surface {
-    @apply rounded-[12px] border border-line bg-card;
+    @apply rounded-[16px] border border-line bg-card;
   }
   /* Elevación al pasar el cursor, solo en tarjetas de contenido:
-     sube 2px y el borde se aclara. Sutil, 200 ms. */
+     sube 2px y el borde se oscurece. Sutil, 200 ms. */
   .surface-hover {
     transition:
       transform 200ms var(--ease-apple),
@@ -102,7 +103,42 @@ h2 {
   }
   .surface-hover:hover {
     transform: translateY(-2px);
-    border-color: rgb(255 255 255 / 0.18);
+    border-color: rgb(28 25 23 / 0.16);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Héroe animado: el degradado cálido cambia de tono y de color de    */
+/* forma lenta y continua (rojo → naranja → ámbar → rosa y vuelta),    */
+/* moviendo la posición de un degradado sobredimensionado. 28 s por    */
+/* ciclo, ida y vuelta, sin cortes: el inicio y el final del ciclo     */
+/* son el mismo punto, así que el bucle es invisible. La única        */
+/* animación no disparada por el usuario en toda la app — todo lo      */
+/* demás es movimiento que responde a una acción.                      */
+/* ------------------------------------------------------------------ */
+.hero-animated {
+  background-image: linear-gradient(
+    115deg,
+    #991b1b,
+    #dc2626 26%,
+    #ea580c 50%,
+    #f59e0b 72%,
+    #e11d48 100%
+  );
+  background-size: 300% 300%;
+  background-position: 0% 50%;
+  animation: hero-drift 28s ease-in-out infinite alternate;
+}
+
+@keyframes hero-drift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 55% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
   }
 }
 
@@ -120,9 +156,11 @@ h2 {
   animation: shell-in 240ms var(--ease-apple) both;
 }
 
-/* Respect reduced motion: no animation at all */
+/* Respect reduced motion: no animation at all — the hero gradient
+   stays fixed on its first (red-orange) position. */
 @media (prefers-reduced-motion: reduce) {
-  .shell-in {
+  .shell-in,
+  .hero-animated {
     animation: none;
   }
   *,
@@ -142,13 +180,13 @@ h2 {
 /* Thin, quiet scrollbars for horizontal strips */
 .scroll-thin {
   scrollbar-width: thin;
-  scrollbar-color: rgb(255 255 255 / 0.18) transparent;
+  scrollbar-color: rgb(28 25 23 / 0.18) transparent;
 }
 .scroll-thin::-webkit-scrollbar {
   height: 6px;
   width: 6px;
 }
 .scroll-thin::-webkit-scrollbar-thumb {
-  background: rgb(255 255 255 / 0.18);
+  background: rgb(28 25 23 / 0.18);
   border-radius: 999px;
 }

@@ -5,6 +5,7 @@ import { PanelProvider, usePanel } from "@/components/panel-context";
 import { Header, MobileNav } from "@/components/Header";
 import { Sidebar } from "@/components/Sidebar";
 import { Dashboard } from "@/components/Dashboard";
+import { AgentChat } from "@/components/Agent";
 import { Metrics } from "@/components/modules/Metrics";
 import { Content } from "@/components/modules/Content";
 import { Ideas } from "@/components/modules/Ideas";
@@ -23,6 +24,9 @@ function Screen() {
   switch (effective) {
     case "hoy":
       content = <Dashboard />;
+      break;
+    case "agente":
+      content = <AgentChat />;
       break;
     case "metricas":
       content = <Metrics />;
