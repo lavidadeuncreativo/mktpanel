@@ -1,25 +1,41 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ink: #0f172a;
-  --color-page: #f8fafc;
+  /* Apple Human Interface tokens */
+  --color-ink: #1d1d1f;
+  --color-page: #f5f5f7;
   --color-card: #ffffff;
-  --color-line: #e4ecfc;
-  --color-primary: #2563eb;
-  --color-primary-soft: #dbeafe;
-  --color-accent: #059669;
-  --color-accent-soft: #d1fae5;
-  --color-teal-accent: #0d9488;
-  --color-teal-soft: #ccfbf1;
-  --color-danger: #dc2626;
-  --color-danger-soft: #fee2e2;
-  --color-amber: #d97706;
-  --color-amber-soft: #fef3c7;
-  --color-muted: #f1f5fd;
-  --color-muted-fg: #475569;
+  --color-line: #d2d2d7;
+  --color-control: #e8e8ed;
+  --color-muted: #f5f5f7;
+  --color-muted-fg: #6e6e73;
 
-  --font-display: "Lexend", ui-sans-serif, system-ui, sans-serif;
-  --font-sans: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
+  /* One accent: Apple blue. Everything else is ink, grey, or a soft tint. */
+  --color-primary: #0071e3;
+  --color-primary-soft: #e8f2fe;
+  --color-primary-text: #0066cc;
+
+  /* Semantic tints (fills are soft, text is dark enough for 4.5:1) */
+  --color-accent: #34c759;
+  --color-accent-soft: #e4f8e9;
+  --color-accent-text: #1e7f34;
+  --color-danger: #ff3b30;
+  --color-danger-soft: #ffe9e7;
+  --color-danger-text: #d70015;
+  --color-amber: #ff9500;
+  --color-amber-soft: #fff3e0;
+  --color-amber-text: #c93400;
+  --color-violet: #af52de;
+  --color-violet-soft: #f3e8fb;
+  --color-violet-text: #7a3db5;
+
+  /* System stack: the closest thing to SF Pro on every platform */
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    "SF Pro Display", "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
+
+  /* Apple's standard spring-ish easing */
+  --ease-apple: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 html {
@@ -32,13 +48,32 @@ body {
   font-family: var(--font-sans);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Large display type gets tighter tracking, Apple-style */
+h1,
+h2 {
+  letter-spacing: -0.02em;
 }
 
 /* Visible keyboard focus, always */
 :focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: 6px;
+}
+
+/* Frosted glass: translucent white over the light page */
+@layer components {
+  .glass {
+    @apply border-line/70 bg-white/70 backdrop-blur-xl;
+  }
+  /* The standard content surface: airy white, hairline divider, soft corners */
+  .surface {
+    @apply rounded-[20px] border border-line/70 bg-white/75 backdrop-blur-xl;
+  }
 }
 
 /* One quiet entrance: a single fade for the shell, nothing per-card */
@@ -52,7 +87,7 @@ body {
 }
 
 .shell-in {
-  animation: shell-in 240ms ease-out both;
+  animation: shell-in 240ms var(--ease-apple) both;
 }
 
 /* Respect reduced motion: no animation at all */
@@ -71,13 +106,13 @@ body {
 /* Thin, quiet scrollbars for horizontal strips */
 .scroll-thin {
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
+  scrollbar-color: #c7c7cc transparent;
 }
 .scroll-thin::-webkit-scrollbar {
   height: 6px;
   width: 6px;
 }
 .scroll-thin::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #c7c7cc;
   border-radius: 999px;
 }

@@ -18,6 +18,7 @@ import {
 } from "@/lib/store";
 
 export type ModuleId =
+  | "hoy"
   | "resumen"
   | "metricas"
   | "contenido"
@@ -29,6 +30,7 @@ export type ModuleId =
 export type ViewId = "general" | WorkspaceId;
 
 export const MODULES: { id: ModuleId; label: string; group: string }[] = [
+  { id: "hoy", label: "Hoy", group: "Panel" },
   { id: "resumen", label: "Resumen", group: "Panel" },
   { id: "metricas", label: "Métricas", group: "Panel" },
   { id: "contenido", label: "Contenido", group: "Operación" },
@@ -61,7 +63,7 @@ export function PanelProvider({ children }: { children: ReactNode }) {
     buildSeedData,
   );
   const [view, setViewState] = useState<ViewId>("evym");
-  const [module, setModuleState] = useState<ModuleId>("resumen");
+  const [module, setModuleState] = useState<ModuleId>("hoy");
 
   const update = useCallback((fn: (d: PanelData) => PanelData) => {
     setPanelData(fn(getPanelData()));
@@ -75,7 +77,7 @@ export function PanelProvider({ children }: { children: ReactNode }) {
     setViewState(v);
     // Giveaway only exists for EVYM; leaving EVYM must not strand the user
     // on a hidden module.
-    setModuleState((m) => (m === "giveaway" && v !== "evym" ? "resumen" : m));
+    setModuleState((m) => (m === "giveaway" && v !== "evym" ? "hoy" : m));
   }, []);
 
   const setModule = useCallback((m: ModuleId) => {

@@ -95,7 +95,7 @@ export function Log() {
       ...data.personal.log.map((l) => ({ ...l, ws: "Personal" })),
     ].sort((a, b) => b.date.localeCompare(a.date));
     return (
-      <div className="space-y-4">
+      <div className="space-y-6">
         <SectionHeading
           title="Bitácora"
           description="Registro de cada captura de métricas, en todos los espacios."
@@ -110,7 +110,7 @@ export function Log() {
             {all.map((entry) => (
               <li
                 key={`${entry.ws}-${entry.id}`}
-                className="rounded-xl border border-line bg-white p-5"
+                className="surface p-5"
               >
                 <p className="text-sm text-muted-fg">
                   {formatDateShort(entry.date)} — {entry.ws} — {entry.source}
@@ -136,7 +136,7 @@ export function Log() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <SectionHeading
         title="Bitácora"
         description="Registro de cada captura de métricas con fecha y fuente."
@@ -163,7 +163,7 @@ export function Log() {
           {sorted.map((entry) => (
             <li
               key={entry.id}
-              className="flex items-start justify-between gap-3 rounded-xl border border-line bg-white p-5"
+              className="surface flex items-start justify-between gap-3 p-5"
             >
               <div className="min-w-0">
                 <p className="text-sm text-muted-fg">
@@ -177,7 +177,7 @@ export function Log() {
                 type="button"
                 onClick={() => removeEntry(entry.id)}
                 aria-label="Borrar entrada de la bitácora"
-                className="inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-lg text-muted-fg transition-colors duration-150 hover:bg-danger-soft hover:text-danger"
+                className="inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full text-muted-fg transition-colors duration-200 ease-apple hover:bg-danger-soft hover:text-danger"
               >
                 <Trash2 className="h-4 w-4" aria-hidden="true" />
               </button>

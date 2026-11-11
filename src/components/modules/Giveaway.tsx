@@ -108,12 +108,12 @@ function AnecdoteForm({ onClose }: { onClose: () => void }) {
           placeholder="Cuéntala como pasó…"
         />
       </Field>
-      <label className="flex min-h-11 cursor-pointer items-start gap-3 rounded-lg border border-line bg-white px-3 py-2.5">
+      <label className="flex min-h-11 cursor-pointer items-start gap-3 rounded-[12px] border border-line bg-white/70 px-3 py-2.5">
         <input
           type="checkbox"
           checked={adult}
           onChange={(e) => setAdult(e.target.checked)}
-          className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer accent-[#2563eb]"
+          className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer accent-[#0071e3]"
         />
         <span className="text-sm text-ink">
           Confirmo que quien participa tiene 18 años o más. El premio es una
@@ -138,7 +138,7 @@ export function Giveaway() {
 
   if (view !== "evym") {
     return (
-      <div className="space-y-4">
+      <div className="space-y-6">
         <SectionHeading
           title="Giveaway"
           description="El sorteo de la botella de mezcal Los Muertos."
@@ -208,7 +208,7 @@ export function Giveaway() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <SectionHeading
         title="Giveaway"
         description="Una botella de mezcal Los Muertos para la mejor anécdota. Solo mayores de 18 años."
@@ -222,26 +222,26 @@ export function Giveaway() {
 
       {/* Winner banner */}
       {winner ? (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-ink p-5 text-white">
+        <div className="surface flex flex-wrap items-center justify-between gap-3 p-5">
           <div className="flex items-center gap-3">
-            <Trophy className="h-6 w-6 shrink-0 text-teal-accent" aria-hidden="true" />
+            <Trophy className="h-6 w-6 shrink-0 text-amber-text" aria-hidden="true" />
             <div>
-              <p className="font-display text-lg font-semibold">
+              <p className="text-lg font-semibold tracking-[-0.01em] text-ink">
                 Ganadora: {winner.name}
               </p>
-              <p className="text-sm text-white/70">
+              <p className="text-sm text-muted-fg">
                 “{winner.title}” — se lleva la botella de mezcal Los Muertos.
               </p>
             </div>
           </div>
-          <Button variant="outline" onClick={clearWinner} className="border-white/20 bg-transparent text-white hover:bg-white/10">
+          <Button variant="outline" onClick={clearWinner}>
             Elegir de nuevo
           </Button>
         </div>
       ) : (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-white p-5">
+        <div className="surface flex flex-wrap items-center justify-between gap-3 p-5">
           <div>
-            <p className="font-display text-base font-semibold text-ink">
+            <p className="text-base font-semibold tracking-[-0.01em] text-ink">
               {ws.anecdotes.length} anécdotas, {finalists.length} finalistas
             </p>
             <p className="mt-0.5 text-sm text-muted-fg">
@@ -273,11 +273,11 @@ export function Giveaway() {
           {sorted.map((a) => (
             <article
               key={a.id}
-              className="rounded-xl border border-line bg-white p-5"
+              className="surface p-5"
             >
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <h3 className="font-display text-base font-semibold text-ink">
+                  <h3 className="text-base font-semibold tracking-[-0.01em] text-ink">
                     {a.title}
                   </h3>
                   <p className="mt-0.5 text-sm text-muted-fg">
@@ -300,7 +300,7 @@ export function Giveaway() {
                         ? `Quitar a ${a.title} de finalistas`
                         : `Marcar ${a.title} como finalista`
                     }
-                    className="inline-flex h-11 cursor-pointer items-center gap-1.5 rounded-lg border border-line bg-white px-3 text-sm font-medium text-ink transition-colors duration-150 hover:bg-muted"
+                    className="inline-flex h-11 cursor-pointer items-center gap-1.5 rounded-full border border-line bg-white/70 px-3.5 text-sm font-medium text-ink transition-colors duration-200 ease-apple hover:bg-white"
                   >
                     <Star
                       className="h-4 w-4"
@@ -313,7 +313,7 @@ export function Giveaway() {
                     type="button"
                     onClick={() => removeAnecdote(a.id, a.title)}
                     aria-label={`Borrar la anécdota ${a.title}`}
-                    className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg text-muted-fg transition-colors duration-150 hover:bg-danger-soft hover:text-danger"
+                    className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full text-muted-fg transition-colors duration-200 ease-apple hover:bg-danger-soft hover:text-danger"
                   >
                     <Trash2 className="h-4 w-4" aria-hidden="true" />
                   </button>

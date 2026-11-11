@@ -3,6 +3,7 @@
 import {
   BarChart3,
   BookOpen,
+  CalendarDays,
   CheckSquare,
   Gift,
   LayoutDashboard,
@@ -16,6 +17,7 @@ import { Progress } from "./ui";
 import { cn } from "./cn";
 
 const MODULE_ICONS: Record<ModuleId, React.ReactNode> = {
+  hoy: <CalendarDays className="h-[18px] w-[18px]" aria-hidden="true" />, 
   resumen: <LayoutDashboard className="h-[18px] w-[18px]" aria-hidden="true" />,
   metricas: <BarChart3 className="h-[18px] w-[18px]" aria-hidden="true" />,
   contenido: <ListVideo className="h-[18px] w-[18px]" aria-hidden="true" />,
@@ -44,10 +46,10 @@ function NavItem({
       onClick={onClick}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-lg px-3 text-[15px] font-medium transition-colors duration-150",
+        "flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-full px-3.5 text-[15px] transition-colors duration-200 ease-apple",
         active
-          ? "bg-ink text-white"
-          : "text-ink hover:bg-muted",
+          ? "bg-control font-semibold text-ink"
+          : "font-normal text-muted-fg hover:bg-control/60 hover:text-ink",
       )}
     >
       {MODULE_ICONS[id]}
@@ -56,7 +58,7 @@ function NavItem({
         <span
           className={cn(
             "rounded-full px-2 py-0.5 text-xs font-semibold",
-            active ? "bg-white/20 text-white" : "bg-muted text-muted-fg",
+            active ? "bg-white text-ink" : "bg-control text-muted-fg",
           )}
         >
           {badge}
@@ -87,21 +89,15 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-40 hidden w-[250px] flex-col border-r border-line bg-white lg:flex">
+    <aside className="fixed inset-y-0 left-0 z-40 hidden w-[250px] flex-col border-r border-line/70 bg-[#fbfbfd]/80 backdrop-blur-xl lg:flex">
       {/* Brand */}
-      <div className="flex items-center gap-3 px-5 pt-5 pb-4">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-ink font-display text-sm font-bold text-white">
-          EV
-        </div>
-        <div className="min-w-0">
-          <p className="font-display text-[15px] leading-tight font-semibold text-ink">
-            Panel EVYM
-          </p>
-          <p className="text-xs text-muted-fg">Marketing de contenido</p>
-        </div>
-        <span className="ml-auto rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-fg">
-          v1.0
-        </span>
+      <div className="px-5 pt-6 pb-4">
+        <p className="text-[19px] leading-tight font-semibold tracking-[-0.02em] text-ink">
+          Panel EVYM
+        </p>
+        <p className="mt-0.5 text-[13px] text-muted-fg">
+          Marketing de contenido
+        </p>
       </div>
 
       {/* Workspace mini-list */}
@@ -111,13 +107,13 @@ export function Sidebar() {
           {WORKSPACES.map((ws) => (
             <div
               key={ws.id}
-              className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm"
+              className="flex items-center gap-2.5 rounded-full px-2.5 py-1.5 text-sm"
             >
               <span
                 className={cn(
                   "h-2 w-2 rounded-full",
                   ws.id === "evym"
-                    ? "bg-teal-accent"
+                    ? "bg-accent"
                     : ws.id === "antojo"
                       ? "bg-amber"
                       : "bg-primary",
@@ -137,7 +133,7 @@ export function Sidebar() {
       >
         {groups.map((group) => (
           <div key={group} className="mt-4 first:mt-1">
-            <p className="px-3 pb-1.5 text-xs font-medium text-muted-fg">
+            <p className="px-3.5 pb-1.5 text-xs font-medium text-muted-fg">
               {group}
             </p>
             <div className="flex flex-col gap-0.5">
@@ -159,7 +155,7 @@ export function Sidebar() {
       </nav>
 
       {/* Weekly goal block */}
-      <div className="border-t border-line p-4">
+      <div className="border-t border-line/70 p-4">
         <div className="flex items-baseline justify-between">
           <p className="text-sm font-semibold text-ink">Meta semanal</p>
           <p className="text-sm font-semibold text-ink">

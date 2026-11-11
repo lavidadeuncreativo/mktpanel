@@ -1,5 +1,7 @@
 import type {
+  ContentItem,
   ContentStatus,
+  Idea,
   MetricSnapshot,
   Network,
   PanelData,
@@ -162,3 +164,88 @@ export function statusCounts(ws: WorkspaceData): Record<ContentStatus, number> {
   for (const c of ws.content) counts[c.status] += 1;
   return counts;
 }
+
+/* ------------------------------------------------------------------ */
+/* La máquina: todo derivado de los datos que ya existen. Nada de      */
+/* esto se guarda aparte, así que nunca puede desincronizarse.         */
+/* ------------------------------------------------------------------ */
+
+/** Today's slot: 0 = Monday … 6 = Sunday. Takes the date as input so the
+ *  function stays pure — the clock is read once, on the client, by
+ *  useTodayIso(). */
+export function todayDayIndex(iso: string): number {
+  return (new Date(`${iso}T12:00:00`).getDay() + 6) % 7;
+}
+
+export interface WeekSlot {
+  dayIndex: number;
+  item: ContentItem | null;
+}
+
+/** The 7 slots of the week, one per day, with their Reel (or empty). */
+export function weekPlan(ws: WorkspaceData): WeekSlot[] {
+  return Array.from({ length: 7 }, (_, i) => ({
+    dayIndex: i,
+    item: ws.content.find((c) => c.dayIndex === i) ?? null,
+  }));
+}
+
+/** The Reel that belongs to today; if today is empty, the next one in
+ *  the pipeline that still needs work. Null when there is nothing. */
+export function todayReel(ws: WorkspaceData, iso: string): ContentItem | null {
+  const today = weekPlan(ws)[todayDayIndex(iso)];
+  if (today?.item) return today.item;
+  const upcoming = [...ws.content]
+    .filter((c) => c.status !== "publicado")
+    .sort((a, b) => (a.dayIndex ?? 99) - (b.dayIndex ?? 99));
+  return upcoming[0] ?? null;
+}
+
+function isoOf(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+/**
+ * Consecutive days with a published Reel, derived from the publish dates.
+ * The streak stays alive through today even if today is not published yet.
+ */
+export function streak(ws: WorkspaceData, iso: string): number {
+  const dates = new Set(
+    ws.content
+      .filter((c) => c.status === "publicado" && c.publishDate)
+      .map((c) => c.publishDate as string),
+  );
+  if (dates.size === 0) return 0;
+  let count = 0;
+  const cursor = new Date(`${iso}T12:00:00`);
+  if (!dates.has(isoOf(cursor))) cursor.setDate(cursor.getDate() - 1);
+  while (dates.has(isoOf(cursor))) {
+    count += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return count;
+}
+
+/** Highest-scored idea in the bank. Ideas leave the bank when they move
+ *  to the pipeline, so the top one is always the next suggested topic. */
+export function nextSuggestedIdea(ws: WorkspaceData): Idea | null {
+  if (ws.ideas.length === 0) return null;
+  return [...ws.ideas].sort(
+    (a, b) => b.score - a.score || a.createdAt.localeCompare(b.createdAt),
+  )[0];
+}
+
+/** What to publish next: unfinished Reels first (by weekday), then the
+ *  published ones, newest first. */
+export function publishQueue(ws: WorkspaceData): ContentItem[] {
+  const byDay = (a: ContentItem, b: ContentItem) =>
+    (a.dayIndex ?? 99) - (b.dayIndex ?? 99);
+  const upcoming = ws.content
+    .filter((c) => c.status !== "publicado")
+    .sort(byDay);
+  const published = ws.content
+    .filter((c) => c.status === "publicado")
+    .sort((a, b) => (b.publishDate ?? "").localeCompare(a.publishDate ?? ""));
+  return [...upcoming, ...published];
+}
+

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowDownRight, ArrowUpRight, Plus, Trash2 } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Plus, Trash2, Upload } from "lucide-react";
 import { usePanel } from "../panel-context";
 import type { MetricSnapshot, Network } from "@/lib/types";
 import { NETWORK_LABELS } from "@/lib/types";
@@ -11,6 +11,7 @@ import {
 } from "@/lib/derive";
 import { formatDateShort, formatDeltaPct, formatNumber, todayIso, uid } from "@/lib/store";
 import { ViewsBars } from "../charts";
+import { CsvImport } from "../CsvImport";
 import { Button, Dialog, EmptyState, Field, Input, Pill, SectionHeading, Select } from "../ui";
 
 const NETWORKS: Network[] = ["facebook", "instagram", "tiktok", "youtube"];
@@ -180,6 +181,7 @@ function SnapshotForm({
 export function Metrics() {
   const { data, view, update } = usePanel();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
 
   if (view === "general") {
     const totals = ["evym", "antojo", "personal"] as const;
@@ -210,12 +212,12 @@ export function Metrics() {
             return (
               <div
                 key={id}
-                className="rounded-xl border border-line bg-white p-5"
+                className="surface p-5"
               >
-                <h3 className="font-display text-base font-semibold text-ink">
+                <h3 className="text-base font-semibold tracking-[-0.01em] text-ink">
                   {name}
                 </h3>
-                <p className="mt-3 font-display text-[28px] leading-none font-semibold text-ink">
+                <p className="mt-3 text-[28px] leading-none font-semibold tracking-[-0.02em] text-ink">
                   {formatNumber(views)}
                 </p>
                 <p className="mt-1 text-sm text-muted-fg">vistas en total</p>
@@ -251,12 +253,18 @@ export function Metrics() {
     <div className="space-y-4">
       <SectionHeading
         title="Métricas"
-        description="Capturas registradas a mano desde Business Suite. La curva y los deltas aparecen con la segunda captura por red."
+        description="Capturas registradas a mano desde Business Suite, o importadas desde un CSV. La curva y los deltas aparecen con la segunda captura por red."
         action={
-          <Button onClick={() => setDialogOpen(true)}>
-            <Plus className="h-4 w-4" aria-hidden="true" />
-            Registrar captura
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" onClick={() => setImportOpen(true)}>
+              <Upload className="h-4 w-4" aria-hidden="true" />
+              Importar CSV
+            </Button>
+            <Button onClick={() => setDialogOpen(true)}>
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              Registrar captura
+            </Button>
+          </div>
         }
       />
 
@@ -281,9 +289,9 @@ export function Metrics() {
             const fDelta = p ? formatDeltaPct(s.followers, p.followers) : null;
             const vDelta = p ? formatDeltaPct(s.views, p.views) : null;
             return (
-              <div key={net} className="rounded-xl border border-line bg-white p-5">
+              <div key={net} className="surface p-5">
                 <div className="flex items-center justify-between gap-2">
-                  <h3 className="font-display text-base font-semibold text-ink">
+                  <h3 className="text-base font-semibold tracking-[-0.01em] text-ink">
                     {NETWORK_LABELS[net]}
                   </h3>
                   <span className="text-xs text-muted-fg">
@@ -292,7 +300,7 @@ export function Metrics() {
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3">
                   <div>
-                    <p className="font-display text-2xl leading-none font-semibold text-ink">
+                    <p className="text-2xl leading-none font-semibold tracking-[-0.02em] text-ink">
                       {formatNumber(s.followers)}
                     </p>
                     <p className="mt-1 flex items-center gap-2 text-sm text-muted-fg">
@@ -312,7 +320,7 @@ export function Metrics() {
                     </p>
                   </div>
                   <div>
-                    <p className="font-display text-2xl leading-none font-semibold text-ink">
+                    <p className="text-2xl leading-none font-semibold tracking-[-0.02em] text-ink">
                       {formatNumber(s.views)}
                     </p>
                     <p className="mt-1 flex items-center gap-2 text-sm text-muted-fg">
@@ -367,8 +375,8 @@ export function Metrics() {
 
       {/* Views per capture */}
       {sorted.length > 0 ? (
-        <div className="rounded-xl border border-line bg-white p-5">
-          <h2 className="font-display text-base font-semibold text-ink">
+        <div className="surface p-5">
+          <h2 className="text-base font-semibold tracking-[-0.01em] text-ink">
             Vistas por captura
           </h2>
           <p className="mt-0.5 text-sm text-muted-fg">
@@ -380,8 +388,8 @@ export function Metrics() {
 
       {/* Snapshot history */}
       {sorted.length > 0 ? (
-        <div className="rounded-xl border border-line bg-white p-5">
-          <h2 className="font-display text-base font-semibold text-ink">
+        <div className="surface p-5">
+          <h2 className="text-base font-semibold tracking-[-0.01em] text-ink">
             Historial de capturas
           </h2>
           <div className="mt-3 overflow-x-auto">
@@ -429,7 +437,7 @@ export function Metrics() {
                         type="button"
                         onClick={() => removeSnapshot(s.id)}
                         aria-label={`Borrar captura de ${NETWORK_LABELS[s.network]} del ${formatDateShort(s.date)}`}
-                        className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg text-muted-fg transition-colors duration-150 hover:bg-danger-soft hover:text-danger"
+                        className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full text-muted-fg transition-colors duration-200 ease-apple hover:bg-danger-soft hover:text-danger"
                       >
                         <Trash2 className="h-4 w-4" aria-hidden="true" />
                       </button>
@@ -450,6 +458,17 @@ export function Metrics() {
         <SnapshotForm
           onClose={() => setDialogOpen(false)}
           workspaceId={view}
+        />
+      </Dialog>
+
+      <Dialog
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        title="Importar CSV de Business Suite"
+      >
+        <CsvImport
+          workspaceId={view}
+          onClose={() => setImportOpen(false)}
         />
       </Dialog>
     </div>

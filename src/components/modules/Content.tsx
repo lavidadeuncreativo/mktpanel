@@ -9,8 +9,10 @@ import {
   STATUS_ORDER,
   WEEK_DAYS,
 } from "@/lib/types";
-import { statusCounts, weeklyProgress } from "@/lib/derive";
+import { statusCounts, todayDayIndex, weeklyProgress } from "@/lib/derive";
 import { formatDateShort, formatNumber, uid } from "@/lib/store";
+import { WeekPlan } from "../WeekPlan";
+import { useTodayIso } from "../useToday";
 import {
   Button,
   Dialog,
@@ -23,14 +25,14 @@ import {
   Select,
 } from "../ui";
 
-function statusTone(status: ContentStatus): "green" | "blue" | "teal" | "neutral" | "amber" {
+function statusTone(status: ContentStatus): "green" | "blue" | "violet" | "neutral" | "amber" {
   switch (status) {
     case "publicado":
       return "green";
     case "edicion":
       return "blue";
     case "imagenes":
-      return "teal";
+      return "violet";
     case "guion":
       return "amber";
     default:
@@ -137,6 +139,7 @@ export function Content() {
   const { data, view, update } = usePanel();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<ContentItem | null>(null);
+  const today = todayDayIndex(useTodayIso());
 
   if (view === "general") {
     const all = [
@@ -146,13 +149,13 @@ export function Content() {
     ];
     const published = all.filter((c) => c.status === "publicado").length;
     return (
-      <div className="space-y-4">
+      <div className="space-y-6">
         <SectionHeading
           title="Contenido"
           description="Pipeline de los 7 Reels semanales por espacio."
         />
-        <div className="rounded-xl border border-line bg-white p-5">
-          <p className="font-display text-2xl font-semibold text-ink">
+        <div className="surface p-5">
+          <p className="text-2xl font-semibold tracking-[-0.02em] text-ink">
             {published} publicados
           </p>
           <p className="mt-1 text-sm text-muted-fg">
@@ -197,7 +200,7 @@ export function Content() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <SectionHeading
         title="Contenido"
         description="Pipeline de los 7 Reels semanales: de la idea a publicado."
@@ -210,9 +213,9 @@ export function Content() {
       />
 
       {/* Weekly progress */}
-      <div className="rounded-xl border border-line bg-white p-5">
+      <div className="surface p-5">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className="font-display text-base font-semibold text-ink">
+          <h2 className="text-base font-semibold tracking-[-0.01em] text-ink">
             Avance de la semana
           </h2>
           <p className="text-sm font-semibold text-ink">
@@ -229,6 +232,24 @@ export function Content() {
         </div>
       </div>
 
+      {/* Week plan: the 7 day-slots, one Reel per day */}
+      <div className="surface p-5">
+        <h2 className="text-base font-semibold tracking-[-0.01em] text-ink">
+          Plan de la semana
+        </h2>
+        <p className="mt-0.5 mb-4 text-sm text-muted-fg">
+          Un Reel por día. Toca un día para editar su Reel.
+        </p>
+        <WeekPlan
+          ws={ws}
+          today={today}
+          onSelect={(item) => {
+            setEditing(item);
+            setDialogOpen(true);
+          }}
+        />
+      </div>
+
       {/* Pipeline table */}
       {sorted.length === 0 ? (
         <EmptyState
@@ -237,7 +258,7 @@ export function Content() {
           action={<Button onClick={openAdd}>Agregar primer Reel</Button>}
         />
       ) : (
-        <div className="rounded-xl border border-line bg-white p-5">
+        <div className="surface p-5">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[620px] text-left text-sm">
               <thead>
@@ -292,7 +313,7 @@ export function Content() {
                             setDialogOpen(true);
                           }}
                           aria-label={`Editar ${c.title}`}
-                          className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg text-muted-fg transition-colors duration-150 hover:bg-muted hover:text-ink"
+                          className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full text-muted-fg transition-colors duration-200 ease-apple hover:bg-control hover:text-ink"
                         >
                           <Pencil className="h-4 w-4" aria-hidden="true" />
                         </button>
@@ -300,7 +321,7 @@ export function Content() {
                           type="button"
                           onClick={() => removeItem(c.id, c.title)}
                           aria-label={`Borrar ${c.title}`}
-                          className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg text-muted-fg transition-colors duration-150 hover:bg-danger-soft hover:text-danger"
+                          className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full text-muted-fg transition-colors duration-200 ease-apple hover:bg-danger-soft hover:text-danger"
                         >
                           <Trash2 className="h-4 w-4" aria-hidden="true" />
                         </button>

@@ -19,10 +19,11 @@ import {
   latestByNetwork,
   previousByNetwork,
   viewsShare,
+  weeklyProgress,
   workspaceTotals,
 } from "@/lib/derive";
 import { formatDateShort, formatDeltaPct, formatNumber } from "@/lib/store";
-import { FollowersArea, NetworkDonut } from "../charts";
+import { FollowersArea, NETWORK_COLORS, NetworkDonut } from "../charts";
 import { WeeklyGoal } from "../WeeklyGoal";
 import { Button, EmptyState, Pill } from "../ui";
 
@@ -86,9 +87,9 @@ function KpiCard({
   context: string[];
 }) {
   return (
-    <div className="rounded-xl border border-line bg-white p-4">
+    <div className="surface p-5">
       <div className="flex items-start justify-between gap-2">
-        <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-line text-muted-fg">
+        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-control text-muted-fg">
           {icon}
         </span>
         {delta ? (
@@ -104,7 +105,7 @@ function KpiCard({
           <Pill tone="neutral">Línea base</Pill>
         )}
       </div>
-      <p className="mt-3 font-display text-[28px] leading-none font-semibold text-ink">
+      <p className="mt-4 text-[28px] leading-none font-semibold tracking-[-0.02em] text-ink">
         {value}
       </p>
       <p className="mt-1.5 text-sm font-medium text-ink">{label}</p>
@@ -119,15 +120,6 @@ function KpiCard({
   );
 }
 
-const DONUT_SWATCH: Record<string, string> = {
-  hatch:
-    "repeating-linear-gradient(45deg, #f97316 0 2px, #ffffff 2px 6px)",
-  grid: "linear-gradient(#0d9488, #0d9488), linear-gradient(90deg, transparent 0 6px, #ffffff 6px 7px), linear-gradient(transparent 0 6px, #ffffff 6px 7px)",
-  lines:
-    "repeating-linear-gradient(0deg, #facc15 0 4px, #ffffff 4px 6px)",
-  solid: "#2563eb",
-};
-
 export function Overview() {
   const { data, view, setModule } = usePanel();
   const { ws } = effectiveWorkspace(view, data);
@@ -136,6 +128,7 @@ export function Overview() {
     view === "general" ? aggregateTotals(data) : workspaceTotals(ws);
   const latest = latestByNetwork(ws.snapshots);
   const previous = previousByNetwork(ws.snapshots);
+  const week = weeklyProgress(view === "general" ? data.evym : ws);
 
   // A delta is honest only when a network has two captures.
   const followersDelta = (() => {
@@ -161,10 +154,6 @@ export function Overview() {
   })();
 
   const share = viewsShare(ws.snapshots);
-  const shareWithPattern = share.map((s, i) => ({
-    ...s,
-    pattern: ["hatch", "grid", "lines", "solid"][i % 4],
-  }));
 
   const topReels = [...ws.content]
     .filter((c) => c.status === "publicado")
@@ -181,7 +170,7 @@ export function Overview() {
           pills: [
             { label: `${formatNumber(totals.followers)} seguidores en total`, tone: "neutral" as const },
             { label: `${formatNumber(totals.views)} vistas en total`, tone: "neutral" as const },
-            { label: `${totals.published} Reels publicados`, tone: "teal" as const },
+            { label: `${totals.published} Reels publicados`, tone: "violet" as const },
           ],
         }
       : view === "evym"
@@ -189,8 +178,14 @@ export function Overview() {
             title: "Entre Vivos y Muertos",
             desc: "Historias de terror mexicanas en video para vender mezcal Los Muertos.",
             pills: [
-              { label: "2 de 7 publicados esta semana", tone: "teal" as const },
-              { label: "Giveaway activo", tone: "amber" as const },
+              { label: `${week.published} de 7 publicados esta semana`, tone: "violet" as const },
+              {
+                label:
+                  ws.anecdotes.length > 0
+                    ? `${ws.anecdotes.length} anécdotas en el giveaway`
+                    : "Giveaway activo",
+                tone: "amber" as const,
+              },
               { label: "Meta: 7 historias por semana", tone: "neutral" as const },
             ],
           }
@@ -209,15 +204,15 @@ export function Overview() {
   const hasData = ws.snapshots.length > 0;
 
   return (
-    <div className="space-y-4">
-      {/* Hero banner */}
-      <section className="rounded-xl border border-line bg-white p-5 sm:p-6">
+    <div className="space-y-6">
+      {/* Hero */}
+      <section className="surface p-6 sm:p-8">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className="font-display text-2xl font-semibold text-ink sm:text-[28px] sm:leading-tight">
+            <h1 className="text-[28px] leading-tight font-semibold tracking-[-0.02em] text-ink sm:text-[34px]">
               {hero.title}
             </h1>
-            <p className="mt-1 max-w-xl text-[15px] text-muted-fg">
+            <p className="mt-1.5 max-w-xl text-[15px] text-muted-fg">
               {hero.desc}
             </p>
           </div>
@@ -300,10 +295,10 @@ export function Overview() {
 
       {/* Charts row 2:1 */}
       <section className="grid gap-4 lg:grid-cols-3">
-        <div className="rounded-xl border border-line bg-white p-5 lg:col-span-2">
+        <div className="surface p-5 sm:p-6 lg:col-span-2">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div>
-              <h2 className="font-display text-base font-semibold text-ink">
+              <h2 className="text-lg font-semibold tracking-[-0.01em] text-ink">
                 Seguidores por red
               </h2>
               <p className="mt-0.5 text-sm text-muted-fg">
@@ -318,16 +313,7 @@ export function Overview() {
                   <span key={n} className="flex items-center gap-1.5">
                     <span
                       className="h-2.5 w-2.5 rounded-full"
-                      style={{
-                        backgroundColor:
-                          n === "facebook"
-                            ? "#2563eb"
-                            : n === "instagram"
-                              ? "#0d9488"
-                              : n === "tiktok"
-                                ? "#0f172a"
-                                : "#dc2626",
-                      }}
+                      style={{ backgroundColor: NETWORK_COLORS[n] }}
                       aria-hidden="true"
                     />
                     {NETWORK_LABELS[n]}
@@ -359,8 +345,8 @@ export function Overview() {
           ) : null}
         </div>
 
-        <div className="rounded-xl border border-line bg-white p-5">
-          <h2 className="font-display text-base font-semibold text-ink">
+        <div className="surface p-5 sm:p-6">
+          <h2 className="text-lg font-semibold tracking-[-0.01em] text-ink">
             Vistas por red
           </h2>
           <p className="mt-0.5 text-sm text-muted-fg">
@@ -377,14 +363,14 @@ export function Overview() {
                 }))}
               />
               <ul className="mt-1 divide-y divide-line">
-                {shareWithPattern.map((s) => (
+                {share.map((s) => (
                   <li
                     key={s.network}
                     className="flex items-center gap-2.5 py-2 text-sm"
                   >
                     <span
-                      className="h-3 w-3 shrink-0 rounded-[3px] border border-line"
-                      style={{ backgroundImage: DONUT_SWATCH[s.pattern] }}
+                      className="h-3 w-3 shrink-0 rounded-[3px]"
+                      style={{ backgroundColor: NETWORK_COLORS[s.network] }}
                       aria-hidden="true"
                     />
                     <span className="flex-1 text-ink">
@@ -414,15 +400,15 @@ export function Overview() {
       {/* Three lists */}
       <section className="grid gap-4 md:grid-cols-3">
         {/* Top Reels */}
-        <div className="rounded-xl border border-line bg-white p-5">
+        <div className="surface p-5 sm:p-6">
           <div className="mb-3 flex items-center justify-between gap-2">
-            <h2 className="font-display text-base font-semibold text-ink">
+            <h2 className="text-lg font-semibold tracking-[-0.01em] text-ink">
               Top Reels
             </h2>
             <button
               type="button"
               onClick={() => setModule("contenido")}
-              className="cursor-pointer text-sm font-medium text-primary hover:underline"
+              className="cursor-pointer text-sm font-medium text-primary transition-opacity duration-200 ease-apple hover:opacity-70"
             >
               Ver contenido
             </button>
@@ -436,7 +422,7 @@ export function Overview() {
             <ul className="divide-y divide-line">
               {topReels.map((reel) => (
                 <li key={reel.id} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted font-display text-xs font-bold text-ink">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-control text-xs font-semibold text-ink">
                     {initials(reel.title)}
                   </span>
                   <span className="min-w-0 flex-1">
@@ -466,16 +452,16 @@ export function Overview() {
         </div>
 
         {/* Recent anecdotes */}
-        <div className="rounded-xl border border-line bg-white p-5">
+        <div className="surface p-5 sm:p-6">
           <div className="mb-3 flex items-center justify-between gap-2">
-            <h2 className="font-display text-base font-semibold text-ink">
+            <h2 className="text-lg font-semibold tracking-[-0.01em] text-ink">
               Anécdotas recientes
             </h2>
             {view === "evym" ? (
               <button
                 type="button"
                 onClick={() => setModule("giveaway")}
-                className="cursor-pointer text-sm font-medium text-primary hover:underline"
+                className="cursor-pointer text-sm font-medium text-primary transition-opacity duration-200 ease-apple hover:opacity-70"
               >
                 Ver giveaway
               </button>
@@ -516,15 +502,15 @@ export function Overview() {
         </div>
 
         {/* Pending tasks */}
-        <div className="rounded-xl border border-line bg-white p-5">
+        <div className="surface p-5 sm:p-6">
           <div className="mb-3 flex items-center justify-between gap-2">
-            <h2 className="font-display text-base font-semibold text-ink">
+            <h2 className="text-lg font-semibold tracking-[-0.01em] text-ink">
               Pendientes
             </h2>
             <button
               type="button"
               onClick={() => setModule("pendientes")}
-              className="cursor-pointer text-sm font-medium text-primary hover:underline"
+              className="cursor-pointer text-sm font-medium text-primary transition-opacity duration-200 ease-apple hover:opacity-70"
             >
               Ver todos
             </button>
@@ -550,19 +536,19 @@ export function Overview() {
         </div>
       </section>
 
-      {/* The one bold element: weekly goal, dark panel */}
+      {/* Weekly goal */}
       <WeeklyGoal ws={view === "general" ? data.evym : ws} />
 
       {/* Pipeline table */}
-      <section className="rounded-xl border border-line bg-white p-5">
+      <section className="surface p-5 sm:p-6">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <h2 className="font-display text-base font-semibold text-ink">
+          <h2 className="text-lg font-semibold tracking-[-0.01em] text-ink">
             Pipeline de contenido
           </h2>
           <button
             type="button"
             onClick={() => setModule("contenido")}
-            className="cursor-pointer text-sm font-medium text-primary hover:underline"
+            className="cursor-pointer text-sm font-medium text-primary transition-opacity duration-200 ease-apple hover:opacity-70"
           >
             Abrir pipeline
           </button>
@@ -612,7 +598,7 @@ export function Overview() {
                               : c.status === "edicion"
                                 ? "blue"
                                 : c.status === "imagenes"
-                                  ? "teal"
+                                  ? "violet"
                                   : "neutral"
                           }
                         >
@@ -634,7 +620,6 @@ export function Overview() {
           </div>
         )}
       </section>
-
     </div>
   );
 }

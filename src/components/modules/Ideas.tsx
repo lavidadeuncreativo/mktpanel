@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRight, Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { usePanel } from "../panel-context";
 import type { Idea, WorkspaceId } from "@/lib/types";
 import { formatDateShort, todayIso, uid } from "@/lib/store";
@@ -98,7 +98,7 @@ export function Ideas() {
       ...data.personal.ideas,
     ];
     return (
-      <div className="space-y-4">
+      <div className="space-y-6">
         <SectionHeading
           title="Ideas"
           description="Banco de temas con puntuación, por espacio."
@@ -151,7 +151,7 @@ export function Ideas() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <SectionHeading
         title="Ideas"
         description="Banco de temas con puntuación. Los mejores pasan directo a guion."
@@ -178,10 +178,10 @@ export function Ideas() {
           {sorted.map((idea) => (
             <article
               key={idea.id}
-              className="flex flex-col rounded-xl border border-line bg-white p-5"
+              className="surface flex flex-col p-5"
             >
               <div className="flex items-start justify-between gap-3">
-                <p className="font-display text-3xl leading-none font-semibold text-ink">
+                <p className="text-3xl leading-none font-semibold tracking-[-0.02em] text-ink">
                   {idea.score}
                   <span className="text-base font-medium text-muted-fg">
                     /10
@@ -191,12 +191,12 @@ export function Ideas() {
                   type="button"
                   onClick={() => removeIdea(idea.id, idea.title)}
                   aria-label={`Borrar la idea ${idea.title}`}
-                  className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg text-muted-fg transition-colors duration-150 hover:bg-danger-soft hover:text-danger"
+                  className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full text-muted-fg transition-colors duration-200 ease-apple hover:bg-danger-soft hover:text-danger"
                 >
                   <Trash2 className="h-4 w-4" aria-hidden="true" />
                 </button>
               </div>
-              <h3 className="mt-3 font-display text-base font-semibold text-ink">
+              <h3 className="mt-3 text-base font-semibold tracking-[-0.01em] text-ink">
                 {idea.title}
               </h3>
               {idea.notes ? (
@@ -217,7 +217,6 @@ export function Ideas() {
                 onClick={() => moveToScript(idea)}
               >
                 Pasar a guion
-                <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </Button>
             </article>
           ))}

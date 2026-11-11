@@ -3,8 +3,8 @@
 import { useMemo, useState, useSyncExternalStore } from "react";
 import {
   BarChart3,
+  CalendarDays,
   CheckSquare,
-  LayoutDashboard,
   Lightbulb,
   ListVideo,
   Search,
@@ -13,6 +13,7 @@ import { usePanel, type ModuleId } from "./panel-context";
 import type { WorkspaceId } from "@/lib/types";
 import { WORKSPACES } from "@/lib/types";
 import { formatDateLong, todayIso } from "@/lib/store";
+import { SegmentedControl } from "./ui";
 import { cn } from "./cn";
 
 interface SearchHit {
@@ -25,11 +26,91 @@ interface SearchHit {
 }
 
 const VIEWS: { id: "general" | WorkspaceId; label: string }[] = [
-  { id: "general", label: "Vista general" },
-  { id: "evym", label: "Entre Vivos y Muertos" },
+  { id: "general", label: "General" },
+  { id: "evym", label: "EVYM" },
   { id: "antojo", label: "Antojo" },
   { id: "personal", label: "Personal" },
 ];
+
+function SearchField({
+  query,
+  setQuery,
+  open,
+  setOpen,
+  hits,
+  goToHit,
+  className,
+}: {
+  query: string;
+  setQuery: (q: string) => void;
+  open: boolean;
+  setOpen: (o: boolean) => void;
+  hits: SearchHit[];
+  goToHit: (hit: SearchHit) => void;
+  className?: string;
+}) {
+  return (
+    <div className={cn("relative", className)}>
+      <Search
+        className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-muted-fg"
+        aria-hidden="true"
+      />
+      <input
+        type="search"
+        value={query}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          setOpen(true);
+        }}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && hits.length > 0) goToHit(hits[0]);
+          if (e.key === "Escape") setOpen(false);
+        }}
+        placeholder="Buscar Reels, ideas, anécdotas"
+        aria-label="Buscar en el panel"
+        className="h-11 w-full rounded-full border border-line/70 bg-white/70 pr-3 pl-10 text-[15px] text-ink placeholder:text-muted-fg/70 transition-colors duration-200 ease-apple focus:border-primary focus:bg-white focus:outline-none"
+      />
+      {open && query.trim().length >= 2 ? (
+        <div className="absolute right-0 left-0 z-50 mt-2 overflow-hidden rounded-[16px] border border-line/70 bg-white/90 shadow-[0_8px_32px_rgba(0,0,0,0.12)] backdrop-blur-xl sm:right-0 sm:left-auto sm:w-80">
+          {hits.length === 0 ? (
+            <p className="px-4 py-3 text-sm text-muted-fg">
+              Sin resultados para “{query.trim()}”.
+            </p>
+          ) : (
+            <ul>
+              {hits.map((hit) => (
+                <li key={hit.key}>
+                  <button
+                    type="button"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      goToHit(hit);
+                    }}
+                    className="flex w-full cursor-pointer items-start gap-3 px-4 py-3 text-left transition-colors duration-200 ease-apple hover:bg-control/50"
+                  >
+                    <span className="mt-0.5 rounded-full bg-control px-2 py-0.5 text-[11px] font-semibold text-muted-fg">
+                      {hit.kind}
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-medium text-ink">
+                        {hit.label}
+                      </span>
+                      <span className="block text-xs text-muted-fg">
+                        {hit.detail}
+                      </span>
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 export function Header() {
   const { data, view, setView, setModule } = usePanel();
@@ -120,48 +201,37 @@ export function Header() {
     setOpen(false);
   };
 
+  const searchProps = {
+    query,
+    setQuery,
+    open,
+    setOpen,
+    hits,
+    goToHit,
+  };
+
   return (
-    <header className="sticky top-0 z-30 border-b border-line bg-white">
+    <header className="sticky top-0 z-30 border-b border-line/70 bg-[#fbfbfd]/70 backdrop-blur-xl">
       <div className="flex min-h-16 items-center gap-3 px-4 sm:px-6">
         {/* Brand on mobile */}
-        <div className="flex items-center gap-2 lg:hidden">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-ink font-display text-xs font-bold text-white">
-            EV
-          </div>
-          <span className="font-display text-[15px] font-semibold text-ink">
-            Panel EVYM
-          </span>
-        </div>
+        <p className="text-[17px] font-semibold tracking-[-0.01em] text-ink lg:hidden">
+          Panel EVYM
+        </p>
 
-        {/* Workspace switcher: segmented on desktop, select on mobile */}
-        <div
-          className="scroll-thin hidden items-center gap-1 overflow-x-auto rounded-lg bg-muted p-1 md:flex"
-          role="tablist"
-          aria-label="Espacio de trabajo"
-        >
-          {VIEWS.map((v) => (
-            <button
-              key={v.id}
-              type="button"
-              role="tab"
-              aria-selected={view === v.id}
-              onClick={() => setView(v.id)}
-              className={cn(
-                "min-h-9 cursor-pointer rounded-md px-3 text-sm font-medium whitespace-nowrap transition-colors duration-150",
-                view === v.id
-                  ? "bg-ink text-white"
-                  : "text-muted-fg hover:text-ink",
-              )}
-            >
-              {v.label}
-            </button>
-          ))}
+        {/* Workspace switcher: iOS segmented control on desktop, select on mobile */}
+        <div className="hidden md:block">
+          <SegmentedControl
+            options={VIEWS}
+            value={view}
+            onChange={(v) => setView(v)}
+            ariaLabel="Espacio de trabajo"
+          />
         </div>
         <select
           aria-label="Espacio de trabajo"
           value={view}
           onChange={(e) => setView(e.target.value as "general" | WorkspaceId)}
-          className="h-11 cursor-pointer rounded-lg border border-line bg-white px-2 text-sm font-medium text-ink md:hidden"
+          className="h-11 cursor-pointer rounded-full border border-line bg-white px-3 text-sm font-medium text-ink md:hidden"
         >
           {VIEWS.map((v) => (
             <option key={v.id} value={v.id}>
@@ -173,76 +243,18 @@ export function Header() {
         <div className="flex-1" />
 
         {/* Search */}
-        <div className="relative hidden sm:block">
-          <Search
-            className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-fg"
-            aria-hidden="true"
-          />
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setOpen(true);
-            }}
-            onFocus={() => setOpen(true)}
-            onBlur={() => setTimeout(() => setOpen(false), 150)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && hits.length > 0) goToHit(hits[0]);
-              if (e.key === "Escape") setOpen(false);
-            }}
-            placeholder="Buscar Reels, ideas, anécdotas"
-            aria-label="Buscar en el panel"
-            className="h-11 w-64 rounded-lg border border-line bg-white pr-3 pl-9 text-[15px] text-ink placeholder:text-muted-fg/70 transition-colors duration-150 focus:border-primary focus:outline-none lg:w-80"
-          />
-          {open && query.trim().length >= 2 ? (
-            <div className="absolute right-0 mt-2 w-80 overflow-hidden rounded-xl border border-line bg-white shadow-none">
-              {hits.length === 0 ? (
-                <p className="px-4 py-3 text-sm text-muted-fg">
-                  Sin resultados para “{query.trim()}”.
-                </p>
-              ) : (
-                <ul>
-                  {hits.map((hit) => (
-                    <li key={hit.key}>
-                      <button
-                        type="button"
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          goToHit(hit);
-                        }}
-                        className="flex w-full cursor-pointer items-start gap-3 px-4 py-3 text-left transition-colors duration-150 hover:bg-muted"
-                      >
-                        <span className="mt-0.5 rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-fg">
-                          {hit.kind}
-                        </span>
-                        <span className="min-w-0">
-                          <span className="block truncate text-sm font-medium text-ink">
-                            {hit.label}
-                          </span>
-                          <span className="block text-xs text-muted-fg">
-                            {hit.detail}
-                          </span>
-                        </span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          ) : null}
-        </div>
+        <SearchField {...searchProps} className="hidden w-64 sm:block lg:w-80" />
 
-        {/* Date pill */}
+        {/* Date */}
         {today ? (
-          <span className="hidden rounded-full bg-muted px-3 py-1.5 text-xs font-medium text-muted-fg xl:inline-flex">
+          <span className="hidden rounded-full bg-control px-3 py-1.5 text-xs font-medium text-muted-fg xl:inline-flex">
             {formatDateLong(today)}
           </span>
         ) : null}
 
         {/* Avatar */}
         <div
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink font-display text-xs font-bold text-white"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-control text-xs font-semibold text-ink"
           title="Isra Granados"
           aria-label="Isra Granados"
         >
@@ -252,65 +264,7 @@ export function Header() {
 
       {/* Mobile search row */}
       <div className="px-4 pb-3 sm:hidden">
-        <div className="relative">
-          <Search
-            className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-fg"
-            aria-hidden="true"
-          />
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setOpen(true);
-            }}
-            onFocus={() => setOpen(true)}
-            onBlur={() => setTimeout(() => setOpen(false), 150)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && hits.length > 0) goToHit(hits[0]);
-              if (e.key === "Escape") setOpen(false);
-            }}
-            placeholder="Buscar Reels, ideas, anécdotas"
-            aria-label="Buscar en el panel"
-            className="h-11 w-full rounded-lg border border-line bg-white pr-3 pl-9 text-[15px] text-ink placeholder:text-muted-fg/70 focus:border-primary focus:outline-none"
-          />
-          {open && query.trim().length >= 2 ? (
-            <div className="absolute right-0 left-0 z-40 mt-2 overflow-hidden rounded-xl border border-line bg-white">
-              {hits.length === 0 ? (
-                <p className="px-4 py-3 text-sm text-muted-fg">
-                  Sin resultados para “{query.trim()}”.
-                </p>
-              ) : (
-                <ul>
-                  {hits.map((hit) => (
-                    <li key={hit.key}>
-                      <button
-                        type="button"
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          goToHit(hit);
-                        }}
-                        className="flex w-full cursor-pointer items-start gap-3 px-4 py-3 text-left hover:bg-muted"
-                      >
-                        <span className="mt-0.5 rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-fg">
-                          {hit.kind}
-                        </span>
-                        <span className="min-w-0">
-                          <span className="block truncate text-sm font-medium text-ink">
-                            {hit.label}
-                          </span>
-                          <span className="block text-xs text-muted-fg">
-                            {hit.detail}
-                          </span>
-                        </span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          ) : null}
-        </div>
+        <SearchField {...searchProps} />
       </div>
     </header>
   );
@@ -318,9 +272,9 @@ export function Header() {
 
 const MOBILE_NAV: { id: ModuleId; label: string; icon: React.ReactNode }[] = [
   {
-    id: "resumen",
-    label: "Resumen",
-    icon: <LayoutDashboard className="h-5 w-5" aria-hidden="true" />,
+    id: "hoy",
+    label: "Hoy",
+    icon: <CalendarDays className="h-5 w-5" aria-hidden="true" />,
   },
   {
     id: "metricas",
@@ -356,7 +310,7 @@ export function MobileNav() {
   return (
     <nav
       aria-label="Módulos del panel"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-line/70 bg-[#fbfbfd]/80 backdrop-blur-xl lg:hidden"
     >
       <div className="grid grid-cols-5">
         {MOBILE_NAV.map((item) => {
@@ -368,7 +322,7 @@ export function MobileNav() {
               onClick={() => setModule(item.id)}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "relative flex min-h-14 cursor-pointer flex-col items-center justify-center gap-0.5 text-[11px] font-medium transition-colors duration-150",
+                "relative flex min-h-14 cursor-pointer flex-col items-center justify-center gap-0.5 text-[11px] font-medium transition-colors duration-200 ease-apple",
                 active ? "text-primary" : "text-muted-fg hover:text-ink",
               )}
             >

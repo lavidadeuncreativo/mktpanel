@@ -17,12 +17,24 @@ import {
 import type { MetricSnapshot, Network } from "@/lib/types";
 import { formatDateShort, formatNumber } from "@/lib/store";
 
-const SERIES_COLORS: Record<Network, string> = {
-  facebook: "#2563eb",
-  instagram: "#0d9488",
-  tiktok: "#0f172a",
-  youtube: "#dc2626",
+/** One quiet color per network; Apple blue leads. */
+export const NETWORK_COLORS: Record<Network, string> = {
+  facebook: "#0071e3",
+  instagram: "#af52de",
+  tiktok: "#1d1d1f",
+  youtube: "#ff3b30",
 };
+
+const SERIES_COLORS = NETWORK_COLORS;
+
+const GRID_STROKE = "#d2d2d7";
+const TICK_FILL = "#6e6e73";
+
+const TOOLTIP_STYLE = {
+  borderRadius: 12,
+  border: "1px solid #d2d2d7",
+  fontSize: 13,
+} as const;
 
 /** Followers over time, one series per network. Real captures only. */
 export function FollowersArea({
@@ -73,18 +85,18 @@ export function FollowersArea({
               </linearGradient>
             ))}
           </defs>
-          <CartesianGrid stroke="#e4ecfc" vertical={false} />
+          <CartesianGrid stroke={GRID_STROKE} vertical={false} />
           <XAxis
             dataKey="date"
             tickFormatter={(d: string) => formatDateShort(d)}
-            tick={{ fill: "#475569", fontSize: 12 }}
+            tick={{ fill: TICK_FILL, fontSize: 12 }}
             axisLine={false}
             tickLine={false}
           />
           <YAxis
             domain={[0, "auto"]}
             allowDecimals={false}
-            tick={{ fill: "#475569", fontSize: 12 }}
+            tick={{ fill: TICK_FILL, fontSize: 12 }}
             axisLine={false}
             tickLine={false}
             width={40}
@@ -101,11 +113,7 @@ export function FollowersArea({
                     : "YouTube",
             ]}
             labelFormatter={(label) => formatDateShort(String(label))}
-            contentStyle={{
-              borderRadius: 12,
-              border: "1px solid #e4ecfc",
-              fontSize: 13,
-            }}
+            contentStyle={TOOLTIP_STYLE}
           />
           {networks.map((net) => (
             <Area
@@ -126,84 +134,21 @@ export function FollowersArea({
   );
 }
 
-/**
- * Donut with patterned fills instead of flat color: diagonal hatch for the
- * first segment, grid for the second, horizontal lines for the third.
- * The pattern is the memorable chart choice; the legend carries the numbers.
- */
+/** Donut in flat network colors; the legend carries the numbers. */
 export function NetworkDonut({
   segments,
 }: {
   segments: { network: Network; label: string; views: number; pct: number }[];
 }) {
   const data = segments.map((s) => ({ ...s, name: s.label }));
-  const patterns: Record<string, { id: string; el: React.ReactNode }> = {
-    hatch: {
-      id: "pat-hatch",
-      el: (
-        <pattern
-          id="pat-hatch"
-          width="8"
-          height="8"
-          patternTransform="rotate(45)"
-          patternUnits="userSpaceOnUse"
-        >
-          <rect width="8" height="8" fill="#f97316" />
-          <line x1="0" y1="0" x2="0" y2="8" stroke="#ffffff" strokeWidth="2" />
-        </pattern>
-      ),
-    },
-    grid: {
-      id: "pat-grid",
-      el: (
-        <pattern id="pat-grid" width="8" height="8" patternUnits="userSpaceOnUse">
-          <rect width="8" height="8" fill="#0d9488" />
-          <path
-            d="M 8 0 L 0 0 0 8"
-            fill="none"
-            stroke="#ffffff"
-            strokeWidth="1.5"
-          />
-        </pattern>
-      ),
-    },
-    lines: {
-      id: "pat-lines",
-      el: (
-        <pattern
-          id="pat-lines"
-          width="8"
-          height="8"
-          patternUnits="userSpaceOnUse"
-        >
-          <rect width="8" height="8" fill="#facc15" />
-          <line x1="0" y1="4" x2="8" y2="4" stroke="#ffffff" strokeWidth="2" />
-        </pattern>
-      ),
-    },
-    solid: {
-      id: "pat-solid",
-      el: (
-        <pattern id="pat-solid" width="8" height="8" patternUnits="userSpaceOnUse">
-          <rect width="8" height="8" fill="#2563eb" />
-        </pattern>
-      ),
-    },
-  };
-  const patternOrder = ["hatch", "grid", "lines", "solid"];
 
   return (
     <div className="h-56 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
-          <defs>{Object.values(patterns).map((p) => p.el)}</defs>
           <Tooltip
             formatter={(value, name) => [formatNumber(Number(value)), name]}
-            contentStyle={{
-              borderRadius: 12,
-              border: "1px solid #e4ecfc",
-              fontSize: 13,
-            }}
+            contentStyle={TOOLTIP_STYLE}
           />
           <Pie
             data={data}
@@ -215,11 +160,8 @@ export function NetworkDonut({
             stroke="#ffffff"
             strokeWidth={2}
           >
-            {data.map((_, i) => (
-              <Cell
-                key={i}
-                fill={`url(#${patterns[patternOrder[i % patternOrder.length]].id})`}
-              />
+            {data.map((s) => (
+              <Cell key={s.network} fill={SERIES_COLORS[s.network]} />
             ))}
           </Pie>
         </PieChart>
@@ -247,10 +189,10 @@ export function ViewsBars({
     <div className="h-56 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-          <CartesianGrid stroke="#e4ecfc" vertical={false} />
+          <CartesianGrid stroke={GRID_STROKE} vertical={false} />
           <XAxis
             dataKey="label"
-            tick={{ fill: "#475569", fontSize: 12 }}
+            tick={{ fill: TICK_FILL, fontSize: 12 }}
             axisLine={false}
             tickLine={false}
             interval={0}
@@ -261,20 +203,16 @@ export function ViewsBars({
           <YAxis
             domain={[0, "auto"]}
             allowDecimals={false}
-            tick={{ fill: "#475569", fontSize: 12 }}
+            tick={{ fill: TICK_FILL, fontSize: 12 }}
             axisLine={false}
             tickLine={false}
             width={48}
           />
           <Tooltip
             formatter={(value) => [formatNumber(Number(value)), "Vistas"]}
-            contentStyle={{
-              borderRadius: 12,
-              border: "1px solid #e4ecfc",
-              fontSize: 13,
-            }}
+            contentStyle={TOOLTIP_STYLE}
           />
-          <Bar dataKey="views" fill="#2563eb" radius={[6, 6, 0, 0]} />
+          <Bar dataKey="views" fill="#0071e3" radius={[6, 6, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>

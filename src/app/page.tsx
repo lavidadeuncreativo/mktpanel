@@ -4,6 +4,7 @@ import { PanelProvider, usePanel } from "@/components/panel-context";
 import { Sidebar } from "@/components/Sidebar";
 import { Header, MobileNav } from "@/components/Header";
 import { Overview } from "@/components/modules/Overview";
+import { Today } from "@/components/modules/Today";
 import { Metrics } from "@/components/modules/Metrics";
 import { Content } from "@/components/modules/Content";
 import { Ideas } from "@/components/modules/Ideas";
@@ -14,6 +15,8 @@ import { Log } from "@/components/modules/Log";
 function ActiveModule() {
   const { module } = usePanel();
   switch (module) {
+    case "hoy":
+      return <Today />;
     case "resumen":
       return <Overview />;
     case "metricas":
@@ -51,7 +54,7 @@ function Shell() {
       <Sidebar />
       <div className="lg:pl-[250px]">
         <Header />
-        <main className="mx-auto w-full max-w-[1280px] px-4 pt-5 pb-24 sm:px-6 lg:pb-10">
+        <main className="mx-auto w-full max-w-[1280px] px-4 pt-6 pb-24 sm:px-8 lg:pb-12">
           <ActiveModule />
           <footer className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
             <p className="text-xs text-muted-fg">
@@ -61,7 +64,7 @@ function Shell() {
             <button
               type="button"
               onClick={reset}
-              className="cursor-pointer text-xs font-medium text-muted-fg underline-offset-2 transition-colors duration-150 hover:text-danger hover:underline"
+              className="cursor-pointer text-xs font-medium text-muted-fg transition-opacity duration-200 ease-apple hover:text-danger hover:opacity-80"
             >
               Restablecer datos iniciales
             </button>
