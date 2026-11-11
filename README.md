@@ -1,10 +1,13 @@
 # Panel EVYM — Marketing de contenido
 
 Panel de marketing estilo Apple para gestionar el contenido de
-**Entre Vivos y Muertos**, **Antojo** y el **perfil personal** de Isra Granados:
-qué toca hoy, métricas, pipeline de Reels, banco de ideas, giveaway,
-pendientes y bitácora. La idea es que sea una máquina: cada día abre el
-panel y sabe qué producir y qué publicar.
+**Entre Vivos y Muertos**, **Antojo** y el **perfil personal** de Isra Granados.
+Es un centro de comando de una sola pantalla: al abrirlo ves todo lo que
+importa sin desplazarte — qué publico hoy, cómo va la semana, qué funcionó
+ayer y qué sigue. Los módulos (métricas, contenido, ideas, giveaway,
+pendientes, bitácora, resumen) ya no son páginas: se abren como detalle
+desde la tarjeta que les corresponde. La idea es que sea una máquina: cada
+día abre el panel y sabe qué producir y qué publicar.
 
 ## Cómo correrlo
 
@@ -34,38 +37,38 @@ npm run start
 
 ## Qué trae
 
-- **Selector de espacio arriba:** Vista general / Entre Vivos y Muertos /
-  Antojo / Personal. Cada espacio guarda sus propios datos por separado.
-- **Hoy (pantalla principal):** el Reel del día según el día de la semana
-  y el estado del pipeline (guion / imágenes / edición / publicar), con el
-  siguiente paso en un botón. Incluye la racha de días consecutivos con un
-  Reel publicado, el plan de la semana (7 espacios, uno por día), el
-  siguiente tema sugerido desde el banco de Ideas con botón para pasarlo a
-  guion, la cola de publicación ordenada y el checklist de hoy.
-- **Resumen:** banner, 5 tarjetas KPI, gráficas 2:1 (área de seguidores +
-  donut de vistas por red), tres listas (Top Reels, anécdotas, pendientes),
-  meta semanal y tabla del pipeline.
-- **Métricas:** capturas manuales desde Business Suite (Meta no permite
-  conectar la cuenta automáticamente), KPI por red, barras de vistas por
-  captura e historial. Además, **importar CSV de Business Suite**: sube el
-  archivo exportado, el importador detecta los encabezados y te deja
-  mapear cada columna (fecha, vistas/alcance, seguidores, reacciones,
-  comentarios, compartidos, red, periodo) y elegir la red. Hay un botón
-  para descargar una plantilla CSV de ejemplo con los encabezados que el
-  importador reconoce. El formato exacto de Meta no se asume: el mapeo
-  manual es lo que hace robusto el importador. Las filas con fecha
-  inválida, red no reconocida o captura ya existente se omiten y se
-  reportan; cada importación queda anotada en la bitácora.
-- **Contenido:** pipeline de los 7 Reels semanales (idea → guion → imágenes
-  → edición → publicado) con barra de avance y el plan de la semana
-  (toca un día para editar su Reel).
-- **Ideas:** banco de temas con puntuación y botón para pasar a guion.
-- **Giveaway (solo en EVYM):** registro de anécdotas, finalistas y elección
-  de ganadora de una botella de mezcal Los Muertos. Solo mayores de 18 años.
-- **Pendientes:** checklist de publicación precargable (incluye verificar el
-  destino de publicaciones cruzadas a Facebook y fijar el comentario),
+La vista única cabe en una pantalla (100vh en escritorio, sin scroll de
+página). Arriba solo hay un control para cambiar de espacio (EVYM / Antojo
+/ Personal): sin sidebar, sin buscador, sin navegación inferior.
+
+- **Hoy (lo único grande):** el Reel del día según el día de la semana y el
+  estado del pipeline (guion / imágenes / edición / publicar), con el
+  siguiente paso en un botón y la racha de días consecutivos con un Reel
+  publicado. Abajo, lo último publicado con sus reproducciones.
+- **El número:** vistas y seguidores en grande, por red, con veredicto:
+  cuánto subieron o bajaron vs la captura anterior (o "Línea base" si solo
+  hay una captura) y qué toca publicar hoy. El panel dice qué hacer, no
+  solo muestra datos.
+- **La semana:** los 7 espacios en celdas, con el día de hoy marcado y el
+  avance (x de 7). Tocar un día abre el pipeline.
+- **Siguiente tema:** el tema más fuerte del banco de Ideas con botón para
+  pasarlo a guion.
+- **A continuación:** la cola de publicación ordenada.
+- **Checklist de hoy:** lo que falta para que el Reel de hoy salga bien,
   con switches estilo iOS.
-- **Bitácora:** registro de cada captura de métricas con fecha y fuente.
+- **Los módulos, en una línea discreta al pie:** Resumen, Métricas,
+  Contenido, Ideas, Giveaway (solo EVYM), Pendientes y Bitácora. Cada uno
+  se abre como detalle (overlay grande con su propio scroll) desde su
+  tarjeta o desde esa línea. Su contenido y su lógica no cambiaron: Métricas
+  sigue con capturas manuales e importar CSV de Business Suite, Contenido
+  con el pipeline, Ideas con el banco, Giveaway con anécdotas y ganadora,
+  Pendientes con el checklist de publicación, Bitácora con el registro y
+  Resumen con KPIs, gráficas y pipeline.
+
+En móvil lo que importa (Hoy, el número y la semana) queda arriba del
+primer pantallazo; lo secundario (siguiente tema, cola, checklist) se
+colapsa detrás de su título y se abre al tocarlo. En escritorio todo está
+siempre abierto: es la rejilla de una pantalla.
 
 ## Datos iniciales
 
@@ -103,6 +106,11 @@ Estilo Apple (Human Interface Guidelines), criterio de los skills
   spring (200–300ms, ease-out).
 - Sin tells de plantilla: nada de tarjetas idénticas con la misma sombra,
   ni mayúsculas con tracking, ni "A · B", ni flechas en enlaces.
+- Vista única, criterio Jobs: una pantalla responde qué publico hoy, cómo
+  va la semana, qué funcionó ayer y qué sigue. Si hay que hacer scroll
+  para entender el día, el diseño falló. Por eso no hay sidebar, ni
+  buscador, ni avatar, ni navegación inferior, ni vista "General": un solo
+  control de espacio arriba y los módulos como detalle.
 - Iconos solo SVG (Lucide), nunca emoji. Contraste 4.5:1, focos visibles,
   objetivos táctiles de 44px, `prefers-reduced-motion` respetado.
   Responsive 375 / 768 / 1024 / 1440 sin scroll horizontal.

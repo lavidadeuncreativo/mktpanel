@@ -17,8 +17,12 @@ import {
   subscribePanelData,
 } from "@/lib/store";
 
+/**
+ * Los 7 módulos ya no son páginas: son detalles que se abren como
+ * overlay (sheet) desde la vista única. "Hoy" dejó de ser un módulo:
+ * la vista única ES el hoy.
+ */
 export type ModuleId =
-  | "hoy"
   | "resumen"
   | "metricas"
   | "contenido"
@@ -29,16 +33,25 @@ export type ModuleId =
 
 export type ViewId = "general" | WorkspaceId;
 
-export const MODULES: { id: ModuleId; label: string; group: string }[] = [
-  { id: "hoy", label: "Hoy", group: "Panel" },
-  { id: "resumen", label: "Resumen", group: "Panel" },
-  { id: "metricas", label: "Métricas", group: "Panel" },
-  { id: "contenido", label: "Contenido", group: "Operación" },
-  { id: "ideas", label: "Ideas", group: "Operación" },
-  { id: "giveaway", label: "Giveaway", group: "Operación" },
-  { id: "pendientes", label: "Pendientes", group: "Operación" },
-  { id: "bitacora", label: "Bitácora", group: "Operación" },
+export const MODULES: { id: ModuleId; label: string }[] = [
+  { id: "resumen", label: "Resumen" },
+  { id: "metricas", label: "Métricas" },
+  { id: "contenido", label: "Contenido" },
+  { id: "ideas", label: "Ideas" },
+  { id: "giveaway", label: "Giveaway" },
+  { id: "pendientes", label: "Pendientes" },
+  { id: "bitacora", label: "Bitácora" },
 ];
+
+export const MODULE_TITLES: Record<ModuleId, string> = {
+  resumen: "Resumen",
+  metricas: "Métricas",
+  contenido: "Contenido",
+  ideas: "Ideas",
+  giveaway: "Giveaway",
+  pendientes: "Pendientes",
+  bitacora: "Bitácora",
+};
 
 interface PanelContextValue {
   data: PanelData;
@@ -46,7 +59,14 @@ interface PanelContextValue {
   resetAll: () => void;
   view: ViewId;
   setView: (v: ViewId) => void;
-  module: ModuleId;
+  /** Módulo abierto como overlay. null = vista única, sin detalle. */
+  overlay: ModuleId | null;
+  openModule: (m: ModuleId) => void;
+  closeModule: () => void;
+  /**
+   * Alias histórico: antes cambiaba de página; ahora abre el overlay.
+   * Lo conservan los módulos que navegan entre sí.
+   */
   setModule: (m: ModuleId) => void;
   /** Workspace whose data the current screen shows. "general" aggregates. */
   activeWorkspace: WorkspaceId | "general";
@@ -63,7 +83,7 @@ export function PanelProvider({ children }: { children: ReactNode }) {
     buildSeedData,
   );
   const [view, setViewState] = useState<ViewId>("evym");
-  const [module, setModuleState] = useState<ModuleId>("hoy");
+  const [overlay, setOverlayState] = useState<ModuleId | null>(null);
 
   const update = useCallback((fn: (d: PanelData) => PanelData) => {
     setPanelData(fn(getPanelData()));
@@ -77,13 +97,18 @@ export function PanelProvider({ children }: { children: ReactNode }) {
     setViewState(v);
     // Giveaway only exists for EVYM; leaving EVYM must not strand the user
     // on a hidden module.
-    setModuleState((m) => (m === "giveaway" && v !== "evym" ? "hoy" : m));
+    setOverlayState((m) => (m === "giveaway" && v !== "evym" ? null : m));
   }, []);
 
-  const setModule = useCallback((m: ModuleId) => {
-    setModuleState(m);
-    window.scrollTo({ top: 0 });
+  const openModule = useCallback((m: ModuleId) => {
+    setOverlayState(m);
   }, []);
+
+  const closeModule = useCallback(() => {
+    setOverlayState(null);
+  }, []);
+
+  const setModule = openModule;
 
   const value = useMemo<PanelContextValue>(
     () => ({
@@ -92,11 +117,13 @@ export function PanelProvider({ children }: { children: ReactNode }) {
       resetAll,
       view,
       setView,
-      module,
+      overlay,
+      openModule,
+      closeModule,
       setModule,
       activeWorkspace: view,
     }),
-    [data, update, resetAll, view, setView, module, setModule],
+    [data, update, resetAll, view, setView, overlay, openModule, closeModule, setModule],
   );
 
   return (

@@ -359,6 +359,70 @@ export function Dialog({
   );
 }
 
+/* ---------- Sheet: el detalle de un módulo, grande, con su propio scroll ----------
+   En escritorio es un panel centrado (hasta 92vh); en móvil ocupa toda la
+   pantalla. Un solo overlay a la vez: abrir otro módulo reemplaza este. */
+
+export function Sheet({
+  open,
+  onClose,
+  title,
+  children,
+}: {
+  open: boolean;
+  onClose: () => void;
+  title: string;
+  children: ReactNode;
+}) {
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [open, onClose]);
+
+  if (!open) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-black/25 backdrop-blur-sm sm:p-4 sm:pt-8 lg:p-6 lg:pt-10"
+      onClick={onClose}
+      role="presentation"
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        className="flex h-full w-full flex-col overflow-hidden bg-[#fbfbfd]/95 shadow-[0_16px_48px_rgba(0,0,0,0.16)] backdrop-blur-xl sm:mx-auto sm:h-auto sm:max-h-[92dvh] sm:max-w-6xl sm:rounded-[24px] sm:border sm:border-line/70"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-line/70 px-5 py-4 sm:px-6">
+          <h2 className="text-lg font-semibold tracking-[-0.01em] text-ink">
+            {title}
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Cerrar"
+            className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-control text-muted-fg transition-colors duration-200 ease-apple hover:text-ink"
+          >
+            <X className="h-4 w-4" aria-hidden="true" />
+          </button>
+        </div>
+        <div className="scroll-thin min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ---------- Empty state: an invitation to act, not a dead end ---------- */
 
 export function EmptyState({
