@@ -352,6 +352,7 @@ export function CsvImport({
         comments: num("comments"),
         shares: num("shares"),
         interactions: null,
+        source: "csv",
       });
       existing.add(`${net}|${date}`);
     });

@@ -1,13 +1,11 @@
 # Panel EVYM — Marketing de contenido
 
-Panel de marketing estilo Apple para gestionar el contenido de
-**Entre Vivos y Muertos**, **Antojo** y el **perfil personal** de Isra Granados.
-Es un centro de comando de una sola pantalla: al abrirlo ves todo lo que
-importa sin desplazarte — qué publico hoy, cómo va la semana, qué funcionó
-ayer y qué sigue. Los módulos (métricas, contenido, ideas, giveaway,
-pendientes, bitácora, resumen) ya no son páginas: se abren como detalle
-desde la tarjeta que les corresponde. La idea es que sea una máquina: cada
-día abre el panel y sabe qué producir y qué publicar.
+Panel de marketing para gestionar el contenido de **Entre Vivos y Muertos**,
+**Antojo** y el **perfil personal** de Isra Granados — y de las marcas que
+vengan después. Es un panel multi-marca: cada marca tiene su propio espacio
+con sus métricas, su contenido y sus ideas, y la barra lateral cambia de
+uno a otro. La idea es que sea una máquina: cada día abre el panel y sabe
+qué producir y qué publicar, con las métricas reales de todo.
 
 ## Cómo correrlo
 
@@ -33,50 +31,44 @@ npm run start
 - Sin backend: los datos viven en `localStorage` del navegador
   (clave `panel-evym-v1`). Hay un botón al pie del panel para restablecer
   los datos iniciales. La clave no cambió, así que los datos guardados
-  en la versión anterior migran solos.
+  en versiones anteriores migran solos. El token de Meta vive aparte, en
+  sus propias claves (`panel-evym-meta-token` y `panel-evym-meta-state`).
 
 ## Qué trae
 
-La vista única cabe en una pantalla (100vh en escritorio, sin scroll de
-página). Arriba solo hay un control para cambiar de espacio (EVYM / Antojo
-/ Personal): sin sidebar, sin buscador, sin navegación inferior.
+Dashboard analítico denso pero refinado (estilo shadcn, "fino"): barra
+lateral delgada con iconos y etiquetas, cabecera con buscador, tarjetas
+KPI con minigráfica y delta, gráfica de líneas grande, dona por red y
+listas organizadas. Tarjetas blancas, bordes sutiles, fondo gris muy
+claro, tipografía pulida, color solo para series y estados.
 
-- **Hoy (el héroe, lo único grande):** título grande "Hoy" con la
-  fecha abajo, y el Reel del día en una sola superficie blanca: su
-  estado, su título en grande, el siguiente paso y UNA sola acción
-  principal — un botón azul grande y lleno (52pt). Abajo, en texto
-  secundario, la racha y lo último publicado. Nada más compite con él.
-- **El número:** sin tarjeta ni gráfica que descifrar. Un solo numeral
-  dominante (vistas en total, 56–64pt), los secundarios pequeños y en
-  gris (seguidores, por red), el veredicto (sube o baja vs la captura
-  anterior) y qué toca publicar hoy.
-- **La semana:** lista agrupada estilo Ajustes de iOS, una fila de 44pt
-  por día con su Reel y su estado. El día de hoy va en azul, lo
-  publicado lleva palomita verde, y tocar una fila con Reel abre el
-  pipeline. Lo mismo aplica en Resumen y Contenido: el plan semanal es
-  la misma lista en los tres sitios.
-- **Siguiente tema:** una fila con su puntuación y un botón de texto
-  azul para pasarlo a guion (no compite con la acción principal).
-- **A continuación:** la cola de publicación como filas (máx. 3) con
-  chevron, y una fila final "Ver pipeline".
-- **Checklist de hoy:** filas con switch iOS; tocar toda la fila marca
-  o desmarca (el objetivo es la fila completa de 44pt, no solo el
-  switch). Lo hecho va tachado y en gris.
-- **Más:** los módulos (Resumen, Métricas, Contenido, Ideas, Giveaway
-  solo en EVYM, Pendientes, Bitácora) son una lista agrupada con icono
-  y chevron: se ve que se pueden tocar. Cada uno se abre como detalle
-  (overlay grande con su propio scroll). Su contenido y su lógica no
-  cambiaron: Métricas sigue con capturas manuales e importar CSV de
-  Business Suite, Contenido con el pipeline, Ideas con el banco,
-  Giveaway con anécdotas y ganadora, Pendientes con el checklist de
-  publicación, Bitácora con el registro y Resumen con KPIs, gráficas y
-  pipeline.
-
-En móvil lo que importa (Hoy, el número y la semana) queda arriba del
-primer pantallazo y la acción principal es lo primero que se ve, a lo
-ancho y con 52pt de alto. En escritorio (1440x900) la página no tiene
-scroll: la columna izquierda (héroe + número) nunca se mueve y la
-columna derecha (las listas) tiene su propio scroll interno.
+- **Barra lateral:** Hoy, Métricas, Contenido, Ideas, Giveaway (solo
+  EVYM), Pendientes, Bitácora y Conexiones. Ítem activo con fondo sutil.
+  Abajo, el selector de espacio: EVYM, Antojo, Personal. En móvil la
+  barra se convierte en una tira horizontal de secciones.
+- **Cabecera:** título de la pantalla actual y buscador global: encuentra
+  Reels, ideas y anécdotas del espacio activo (y secciones por nombre);
+  tocar un resultado abre la pantalla que le corresponde.
+- **Hoy (el dashboard):** fila de 4 tarjetas KPI — vistas totales,
+  seguidores, comentarios y racha — cada una con su minigráfica (sparkline)
+  y su delta vs la captura anterior; gráfica de líneas de vistas en el
+  tiempo (una serie por red); dona de vistas por red; y abajo el Reel de
+  hoy con su siguiente paso (la acción principal de la máquina), la
+  semana, la cola de publicación y el siguiente tema sugerido.
+- **Métricas:** capturas por red con sus deltas, gráfica de vistas por
+  captura, curva de seguidores en el tiempo, historial de capturas con su
+  origen (Manual, CSV o Meta) y registro manual o importación de CSV de
+  Business Suite.
+- **Contenido:** el pipeline idea → guion → imágenes → edición →
+  publicado, con la meta de 7 Reels por semana.
+- **Ideas:** el banco de ideas con puntuación; la mejor pasa a guion.
+- **Giveaway:** solo en EVYM: anécdotas, finalistas y elección de ganadora
+  (mayores de 18 años).
+- **Pendientes:** el checklist de publicación.
+- **Bitácora:** el registro de todo lo que pasa (capturas, importaciones,
+  sincronizaciones).
+- **Conexiones:** sincronización real con Meta (Facebook + Instagram).
+  Ver abajo.
 
 ## Datos iniciales
 
@@ -88,71 +80,96 @@ Solo los datos reales capturados el 10 nov 2026 están precargados en EVYM:
 - Reels publicados: "Leyenda de La Pascualita" (9 nov, 281 reproducciones)
   y "El Secreto de la Calle Salamanca" (10 nov). Semana: 2 de 7.
 
-Antojo y el perfil personal arrancan vacíos, a propósito. Los deltas y la
-curva de crecimiento solo aparecen cuando hay dos capturas por red; con una
-sola captura se muestra "Línea base". Nada más está inventado.
+Antojo y el perfil personal arrancan vacíos, a propósito. Los deltas, las
+minigráficas y las tendencias solo aparecen cuando hay dos capturas por
+red; con una sola captura se muestra "Línea base". Nada está inventado.
+
+## Conexiones — sincronizar con Meta
+
+La vista **Conexiones** sincroniza las métricas reales de Facebook e
+Instagram con la Graph API de Meta (v21.0). El token lo pega el usuario y
+se guarda **solo en localStorage de su navegador**; nunca sale de ahí ni
+se guarda en el repo.
+
+**Cómo conseguir el token:**
+
+1. Entra a developers.facebook.com con tu cuenta de Facebook (la que
+   administra la Página) y crea una app (tipo "Negocios" u "Otro"). La
+   app se puede llamar "Panel EVYM".
+2. En la app, abre Herramientas → Explorador de la API Graph, elige tu
+   app y pulsa "Generar token de acceso".
+3. Agrega estos permisos: `pages_show_list`, `pages_read_engagement`,
+   `instagram_basic`, `instagram_manage_insights`. Como eres el dueño de
+   la app, funcionan sin revisión de Meta.
+4. En el mismo Explorador, abre el token en el "Depurador de tokens" y
+   pulsa "Ampliar token de acceso": así dura unos 60 días en lugar de
+   una hora.
+5. Copia el token ampliado y pégalo en Conexiones. Pulsa "Probar
+   conexión": deberías ver tu Página "Entre vivos y muertos" y la cuenta
+   @entrevivosymuertos666. Si administras más Páginas (Antojo, etc.),
+   también aparecen: elige la que quieres sincronizar y el espacio donde
+   guardar sus capturas.
+
+**Qué trae la sincronización:**
+
+- Facebook: seguidores actuales (`fan_count`) e impresiones y
+  participaciones de los últimos 28 días (`page_impressions`,
+  `page_post_engagements`).
+- Instagram: seguidores actuales y vistas (impresiones) y alcance
+  sumados de los últimos 28 días.
+- Cada sincronización crea una captura por red con la fecha de hoy y el
+  periodo "Últimos 28 días (Meta)". Si ya existe una captura de Meta
+  para esa red y ese día, se reemplaza, no se duplica. Cada sincronización
+  queda anotada en la Bitácora.
+- **Lo que la API no devuelve se marca como no disponible, nunca se
+  inventa:** Meta no desglosa reacciones, comentarios y compartidos a
+  nivel de página, así que esos campos se guardan vacíos y se muestran
+  como "Sin datos".
+- Errores en español claro: token inválido o caducado, permiso faltante
+  (con el nombre del permiso), Página o Instagram no encontrados, límite
+  de peticiones. Si una red falla, la otra igual se sincroniza y el fallo
+  queda en el reporte.
+- El token de larga duración caduca (~60 días): cuando la sincronización
+  falle con "token inválido o caducó", repite los pasos 2–5 y pega el
+  nuevo. El token de la Página que usa el panel no caduca mientras el
+  token de usuario siga vigente.
+
+TikTok y YouTube todavía no se sincronizan: necesitan su propia app de
+desarrollador (TikTok para Empresas, Google Cloud + API de YouTube). Por
+ahora, sus métricas se registran a mano en Métricas. La vista Conexiones
+lo dice así, sin prometerlo.
 
 ## Diseño
 
-Estilo Apple (Human Interface Guidelines) aplicado de verdad, no solo
-los colores — el fallo de la versión anterior era una rejilla de
-tarjetas idénticas donde todo se veía igual y nada se entendía:
+Dashboard analítico premium, no minimalista vacío: la herramienta es de
+datos y se tiene que ver como tal — densa, pero ordenada y legible.
 
-- **Large Title:** "Hoy" en 34pt negrita con la fecha como subtítulo.
-  Al abrir se sabe en un segundo en qué pantalla estás.
-- **Un héroe, no una rejilla de iguales:** el Reel del día es la única
-  superficie grande; cada zona tiene su propio tratamiento y ritmo
-  (héroe blanco, número en tipografía desnuda, listas agrupadas). Nada
-  de tarjetas idénticas.
-- **Listas agrupadas estilo Ajustes de iOS:** filas de 44pt con
-  separadores inset, icono en chip, título de 17pt, subtítulo gris de
-  15pt y encabezados de sección pequeños en gris (13pt).
-- **Affordances claras:** lo tocable lleva chevron, botón lleno o
-  switch; lo que no se toca es texto plano. Nadie adivina.
-- **Una sola acción principal por pantalla:** el siguiente paso del Reel
-  de hoy es el único botón azul grande y lleno. Todo lo demás es texto
-  azul o fila con chevron.
-- **Color semántico y nada más:** azul = acción, verde = publicado o
-  hecho, rojo = necesita atención, gris = secundario. Sin color
-  decorativo.
-- **Jerarquía tipográfica real:** título grande 34, título 22–30,
-  cuerpo 17, secundario 15, pie 13. Objetivos táctiles de 44pt mínimo.
-- **Móvil primero:** se revisa en el teléfono, con una mano; la acción
-  principal es lo primero que se ve. En escritorio (1440x900) la página
-  no tiene scroll.
-- Tipografía con la pila del sistema (aproximación a SF Pro), titulares
-  semibold con tracking ajustado, base 16px.
-- Mucho aire: contenido protagonista, chrome mínimo. Superficies
-  traslúcidas tipo frosted glass (`backdrop-blur`, blancos al 70–80%
-  sobre fondo gris muy claro), divisores finos en vez de bordes
-  pesados, nada de sombras fuertes.
-- Texto casi negro `#1D1D1F`, secundario `#6E6E73`, divisores `#D2D2D7`.
-  Azul Apple `#0071E3` para acciones. Verde `#34C759`, rojo `#FF3B30`,
-  ámbar `#FF9500` y violeta `#AF52DE` solo para estados.
-- Controles refinados: botón de acción grande (52pt, esquinas de 14px),
-  botones cápsula, switches iOS, segment control para el selector de
-  espacio. Movimiento suave tipo spring (200–300ms, ease-out).
-- Sin tells de plantilla: nada de tarjetas idénticas con la misma sombra,
-  ni mayúsculas con tracking, ni "A · B", ni flechas en enlaces.
-- Vista única, criterio Jobs: una pantalla responde qué publico hoy, cómo
-  va la semana, qué funcionó ayer y qué sigue. Si hay que hacer scroll
-  para entender el día, el diseño falló. Por eso no hay sidebar, ni
-  buscador, ni avatar, ni navegación inferior, ni vista "General": un solo
-  control de espacio arriba y los módulos como detalle.
+- Barra lateral delgada (240px) con icono + etiqueta, activo con fondo
+  sutil; cabecera blanca con buscador en píldora.
+- Tarjetas blancas sólidas, bordes finos, sombra mínima, fondo gris muy
+  claro (`#f5f5f7`); rejilla densa con ritmo (KPIs, gráficas 2:1, listas).
+- Tipografía refinada con la pila del sistema (aproximación a SF Pro),
+  titulares semibold con tracking ajustado: título de vista 24, KPIs 30,
+  cuerpo 14–15, pie 12–13.
+- Color con moderación: azul `#0071e3` para acciones y la serie de
+  Facebook, violeta para Instagram, verde para lo publicado o en alza,
+  rojo para lo que baja. Sin color decorativo.
+- Affordances claras: lo tocable lleva chevron, botón o fila con hover;
+  lo que no se toca es texto plano. Objetivos táctiles de 44px en móvil.
+- Responsive 375 / 768 / 1024 / 1440 sin scroll horizontal. En móvil la
+  navegación es una tira horizontal y el dashboard se apila.
 - Iconos solo SVG (Lucide), nunca emoji. Contraste 4.5:1, focos visibles,
-  objetivos táctiles de 44px, `prefers-reduced-motion` respetado.
-  Responsive 375 / 768 / 1024 / 1440 sin scroll horizontal.
+  `prefers-reduced-motion` respetado.
 - Nota técnica (Next.js 16, Cache Components): la fecha de hoy se lee solo
-  en el cliente (`src/components/useToday.ts`, mismo patrón que el Header);
-  leer el reloj durante el prerender rompe el build. Las funciones de
-  `src/lib/derive.ts` que dependen del día (racha, Reel de hoy) reciben la
-  fecha como parámetro y no leen el reloj.
+  en el cliente (`src/components/useToday.ts`); leer el reloj durante el
+  prerender rompe el build. Las funciones de `src/lib/derive.ts` que
+  dependen del día (racha, Reel de hoy) reciben la fecha como parámetro
+  y no leen el reloj.
 
-## Medición automática
+## Medición
 
-La medición automática (sincronización directa con Meta) necesita una app
-de desarrollador de Meta con permisos, y es un proyecto aparte: no está
-prometida. El flujo de medición que sí funciona hoy es: exportar el CSV
-desde Business Suite e importarlo en Métricas, o registrar la captura
-a mano. La plantilla CSV descargable del importador tiene los encabezados
-esperados.
+Tres formas de meter métricas, en orden de comodidad: sincronizar con
+Meta en Conexiones (Facebook + Instagram, últimos 28 días), importar el
+CSV de Business Suite en Métricas, o registrar la captura a mano. Con la
+segunda captura por red aparecen los deltas, las minigráficas y las
+tendencias reales.

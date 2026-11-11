@@ -70,9 +70,10 @@ h2 {
   .glass {
     @apply border-line/70 bg-white/70 backdrop-blur-xl;
   }
-  /* The standard content surface: airy white, hairline divider, soft corners */
+  /* La superficie estándar del dashboard: blanca sólida, borde fino y
+     sombra mínima. Denso pero refinado, como un panel analítico. */
   .surface {
-    @apply rounded-[20px] border border-line/70 bg-white/75 backdrop-blur-xl;
+    @apply rounded-[14px] border border-line/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)];
   }
 }
 

@@ -69,11 +69,13 @@ export function workspaceTotals(ws: WorkspaceData): WorkspaceTotals {
     networksWithData.push(net);
     followers += s.followers;
     views += s.views;
-    reactions += s.reactions;
-    comments += s.comments;
-    shares += s.shares;
+    // A null breakdown means "not reported", not zero: it adds nothing
+    // to the total and the per-network card shows "Sin datos".
+    reactions += s.reactions ?? 0;
+    comments += s.comments ?? 0;
+    shares += s.shares ?? 0;
     interactions +=
-      s.interactions ?? s.reactions + s.comments + s.shares;
+      s.interactions ?? (s.reactions ?? 0) + (s.comments ?? 0) + (s.shares ?? 0);
   });
   return {
     followers,
@@ -139,6 +141,41 @@ export function viewsShare(
     ...e,
     pct: total > 0 ? (e.views / total) * 100 : 0,
   }));
+}
+
+/** One point per capture date: the chosen metric summed across networks.
+ *  Used for sparklines and the views-over-time line chart. Real captures
+ *  only — with a single capture the series has a single point, and the
+ *  UI says so instead of drawing a fake trend. */
+export function metricSeries(
+  snapshots: MetricSnapshot[],
+  key: "views" | "followers" | "comments" | "reactions" | "shares",
+): { date: string; value: number }[] {
+  const byDate = new Map<string, number>();
+  for (const s of snapshots) {
+    byDate.set(s.date, (byDate.get(s.date) ?? 0) + (s[key] ?? 0));
+  }
+  return Array.from(byDate.entries())
+    .map(([date, value]) => ({ date, value }))
+    .sort((a, b) => a.date.localeCompare(b.date));
+}
+
+/** Views per date, one series per network, for the line chart. */
+export function viewsSeriesByNetwork(
+  snapshots: MetricSnapshot[],
+): { date: string; facebook?: number; instagram?: number; tiktok?: number; youtube?: number }[] {
+  const byDate = new Map<
+    string,
+    { date: string; facebook?: number; instagram?: number; tiktok?: number; youtube?: number }
+  >();
+  for (const s of snapshots) {
+    const row = byDate.get(s.date) ?? { date: s.date };
+    row[s.network] = s.views;
+    byDate.set(s.date, row);
+  }
+  return Array.from(byDate.values()).sort((a, b) =>
+    String(a.date).localeCompare(String(b.date)),
+  );
 }
 
 /** Weekly progress: how many of the 7 day-slots hold a published Reel. */

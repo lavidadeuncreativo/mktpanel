@@ -18,12 +18,12 @@ import {
 } from "@/lib/store";
 
 /**
- * Los 7 módulos ya no son páginas: son detalles que se abren como
- * overlay (sheet) desde la vista única. "Hoy" dejó de ser un módulo:
- * la vista única ES el hoy.
+ * Las pantallas del panel: el dashboard (Hoy) más los módulos, que ya no
+ * son overlays sino vistas propias a las que se llega desde la barra
+ * lateral. El Resumen anterior quedó absorbido por el dashboard de Hoy
+ * (sus KPIs, gráficas y listas viven ahí).
  */
 export type ModuleId =
-  | "resumen"
   | "metricas"
   | "contenido"
   | "ideas"
@@ -31,10 +31,11 @@ export type ModuleId =
   | "pendientes"
   | "bitacora";
 
+export type ScreenId = "hoy" | ModuleId | "conexiones";
+
 export type ViewId = "general" | WorkspaceId;
 
 export const MODULES: { id: ModuleId; label: string }[] = [
-  { id: "resumen", label: "Resumen" },
   { id: "metricas", label: "Métricas" },
   { id: "contenido", label: "Contenido" },
   { id: "ideas", label: "Ideas" },
@@ -43,8 +44,18 @@ export const MODULES: { id: ModuleId; label: string }[] = [
   { id: "bitacora", label: "Bitácora" },
 ];
 
+export const SCREEN_TITLES: Record<ScreenId, string> = {
+  hoy: "Hoy",
+  metricas: "Métricas",
+  contenido: "Contenido",
+  ideas: "Ideas",
+  giveaway: "Giveaway",
+  pendientes: "Pendientes",
+  bitacora: "Bitácora",
+  conexiones: "Conexiones",
+};
+
 export const MODULE_TITLES: Record<ModuleId, string> = {
-  resumen: "Resumen",
   metricas: "Métricas",
   contenido: "Contenido",
   ideas: "Ideas",
@@ -59,14 +70,14 @@ interface PanelContextValue {
   resetAll: () => void;
   view: ViewId;
   setView: (v: ViewId) => void;
-  /** Módulo abierto como overlay. null = vista única, sin detalle. */
-  overlay: ModuleId | null;
+  /** Pantalla actual: el dashboard o un módulo. */
+  screen: ScreenId;
+  openScreen: (s: ScreenId) => void;
+  /** Alias: antes abría el módulo como overlay; ahora cambia de pantalla. */
   openModule: (m: ModuleId) => void;
+  /** Alias: vuelve al dashboard. */
   closeModule: () => void;
-  /**
-   * Alias histórico: antes cambiaba de página; ahora abre el overlay.
-   * Lo conservan los módulos que navegan entre sí.
-   */
+  /** Alias histórico: antes cambiaba de página; ahora abre la pantalla. */
   setModule: (m: ModuleId) => void;
   /** Workspace whose data the current screen shows. "general" aggregates. */
   activeWorkspace: WorkspaceId | "general";
@@ -83,7 +94,7 @@ export function PanelProvider({ children }: { children: ReactNode }) {
     buildSeedData,
   );
   const [view, setViewState] = useState<ViewId>("evym");
-  const [overlay, setOverlayState] = useState<ModuleId | null>(null);
+  const [screen, setScreenState] = useState<ScreenId>("hoy");
 
   const update = useCallback((fn: (d: PanelData) => PanelData) => {
     setPanelData(fn(getPanelData()));
@@ -96,16 +107,20 @@ export function PanelProvider({ children }: { children: ReactNode }) {
   const setView = useCallback((v: ViewId) => {
     setViewState(v);
     // Giveaway only exists for EVYM; leaving EVYM must not strand the user
-    // on a hidden module.
-    setOverlayState((m) => (m === "giveaway" && v !== "evym" ? null : m));
+    // on a hidden screen.
+    setScreenState((s) => (s === "giveaway" && v !== "evym" ? "hoy" : s));
+  }, []);
+
+  const openScreen = useCallback((s: ScreenId) => {
+    setScreenState(s);
   }, []);
 
   const openModule = useCallback((m: ModuleId) => {
-    setOverlayState(m);
+    setScreenState(m);
   }, []);
 
   const closeModule = useCallback(() => {
-    setOverlayState(null);
+    setScreenState("hoy");
   }, []);
 
   const setModule = openModule;
@@ -117,13 +132,14 @@ export function PanelProvider({ children }: { children: ReactNode }) {
       resetAll,
       view,
       setView,
-      overlay,
+      screen,
+      openScreen,
       openModule,
       closeModule,
       setModule,
       activeWorkspace: view,
     }),
-    [data, update, resetAll, view, setView, overlay, openModule, closeModule, setModule],
+    [data, update, resetAll, view, setView, screen, openScreen, openModule, closeModule, setModule],
   );
 
   return (

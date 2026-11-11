@@ -218,3 +218,141 @@ export function ViewsBars({
     </div>
   );
 }
+
+/** Tiny sparkline for a KPI card: one metric summed per capture date.
+ *  Returns null when there is a single point — a trend line through one
+ *  dot would be a lie, and the card says "Línea base" instead. */
+export function Sparkline({
+  data,
+  color,
+}: {
+  data: { date: string; value: number }[];
+  color: string;
+}) {
+  if (data.length < 2) return null;
+  return (
+    <div className="h-10 w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={data} margin={{ top: 2, right: 0, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id={`spark-${color.replace("#", "")}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={color} stopOpacity={0.25} />
+              <stop offset="100%" stopColor={color} stopOpacity={0.02} />
+            </linearGradient>
+          </defs>
+          <Area
+            type="monotone"
+            dataKey="value"
+            stroke={color}
+            strokeWidth={1.75}
+            fill={`url(#spark-${color.replace("#", "")})`}
+            dot={false}
+            isAnimationActive={false}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+/** Views over time, one line per network. Real captures only: with a
+ *  single capture date the chart shows one dot per network and the card
+ *  explains that the trend appears with the second capture. */
+export function ViewsLine({
+  series,
+}: {
+  series: {
+    date: string;
+    facebook?: number;
+    instagram?: number;
+    tiktok?: number;
+    youtube?: number;
+  }[];
+}) {
+  const networks = Array.from(
+    new Set(
+      series.flatMap((row) =>
+        (["facebook", "instagram", "tiktok", "youtube"] as Network[]).filter(
+          (k) => typeof row[k] === "number",
+        ),
+      ),
+    ),
+  ) as Network[];
+
+  if (series.length === 0) return null;
+
+  return (
+    <div className="h-64 w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={series} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+          <defs>
+            {networks.map((net) => (
+              <linearGradient
+                key={net}
+                id={`line-${net}`}
+                x1="0"
+                y1="0"
+                x2="0"
+                y2="1"
+              >
+                <stop
+                  offset="0%"
+                  stopColor={SERIES_COLORS[net]}
+                  stopOpacity={0.16}
+                />
+                <stop
+                  offset="100%"
+                  stopColor={SERIES_COLORS[net]}
+                  stopOpacity={0.02}
+                />
+              </linearGradient>
+            ))}
+          </defs>
+          <CartesianGrid stroke={GRID_STROKE} vertical={false} />
+          <XAxis
+            dataKey="date"
+            tickFormatter={(d: string) => formatDateShort(d)}
+            tick={{ fill: TICK_FILL, fontSize: 12 }}
+            axisLine={false}
+            tickLine={false}
+          />
+          <YAxis
+            domain={[0, "auto"]}
+            allowDecimals={false}
+            tick={{ fill: TICK_FILL, fontSize: 12 }}
+            axisLine={false}
+            tickLine={false}
+            width={48}
+          />
+          <Tooltip
+            formatter={(value, name) => [
+              formatNumber(Number(value)),
+              name === "facebook"
+                ? "Facebook"
+                : name === "instagram"
+                  ? "Instagram"
+                  : name === "tiktok"
+                    ? "TikTok"
+                    : "YouTube",
+            ]}
+            labelFormatter={(label) => formatDateShort(String(label))}
+            contentStyle={TOOLTIP_STYLE}
+          />
+          {networks.map((net) => (
+            <Area
+              key={net}
+              type="monotone"
+              dataKey={net}
+              stroke={SERIES_COLORS[net]}
+              strokeWidth={2}
+              fill={`url(#line-${net})`}
+              dot={{ r: 3.5, fill: SERIES_COLORS[net], strokeWidth: 0 }}
+              activeDot={{ r: 5 }}
+              connectNulls
+            />
+          ))}
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}

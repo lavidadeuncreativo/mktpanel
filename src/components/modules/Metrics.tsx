@@ -10,7 +10,7 @@ import {
   previousByNetwork,
 } from "@/lib/derive";
 import { formatDateShort, formatDeltaPct, formatNumber, todayIso, uid } from "@/lib/store";
-import { ViewsBars } from "../charts";
+import { ViewsBars, FollowersArea } from "../charts";
 import { CsvImport } from "../CsvImport";
 import { Button, Dialog, EmptyState, Field, Input, Pill, SectionHeading, Select } from "../ui";
 
@@ -47,6 +47,7 @@ function SnapshotForm({
       comments: Number(comments) || 0,
       shares: Number(shares) || 0,
       interactions: interactions.trim() === "" ? null : Number(interactions),
+      source: "manual",
     };
     update((d) => {
       const ws = d[workspaceId];
@@ -60,7 +61,7 @@ function SnapshotForm({
             {
               id: uid(),
               date,
-              text: `Captura de ${NETWORK_LABELS[network]}: ${formatNumber(snap.followers)} seguidores, ${formatNumber(snap.views)} vistas, ${formatNumber(snap.reactions)} reacciones, ${formatNumber(snap.comments)} comentarios, ${formatNumber(snap.shares)} compartidos.`,
+              text: `Captura de ${NETWORK_LABELS[network]}: ${formatNumber(snap.followers)} seguidores, ${formatNumber(snap.views)} vistas, ${formatNumber(snap.reactions ?? 0)} reacciones, ${formatNumber(snap.comments ?? 0)} comentarios, ${formatNumber(snap.shares ?? 0)} compartidos.`,
               source: `${NETWORK_LABELS[network]} / Business Suite`,
             },
           ],
@@ -341,19 +342,25 @@ export function Metrics() {
                   </div>
                   <div>
                     <p className="text-lg font-semibold text-ink">
-                      {formatNumber(s.reactions)}
+                      {s.reactions !== null
+                        ? formatNumber(s.reactions)
+                        : "Sin datos"}
                     </p>
                     <p className="text-sm text-muted-fg">Reacciones</p>
                   </div>
                   <div>
                     <p className="text-lg font-semibold text-ink">
-                      {formatNumber(s.comments)}
+                      {s.comments !== null
+                        ? formatNumber(s.comments)
+                        : "Sin datos"}
                     </p>
                     <p className="text-sm text-muted-fg">Comentarios</p>
                   </div>
                   <div>
                     <p className="text-lg font-semibold text-ink">
-                      {formatNumber(s.shares)}
+                      {s.shares !== null
+                        ? formatNumber(s.shares)
+                        : "Sin datos"}
                     </p>
                     <p className="text-sm text-muted-fg">Compartidos</p>
                   </div>
@@ -386,6 +393,21 @@ export function Metrics() {
         </div>
       ) : null}
 
+      {/* Followers over time */}
+      {sorted.length > 0 ? (
+        <div className="surface p-5">
+          <h2 className="text-base font-semibold tracking-[-0.01em] text-ink">
+            Seguidores en el tiempo
+          </h2>
+          <p className="mt-0.5 text-sm text-muted-fg">
+            Evolución según tus capturas registradas. Con una sola captura
+            por red la curva es un punto: la tendencia aparece con la
+            segunda.
+          </p>
+          <FollowersArea snapshots={ws.snapshots} />
+        </div>
+      ) : null}
+
       {/* Snapshot history */}
       {sorted.length > 0 ? (
         <div className="surface p-5">
@@ -398,6 +420,7 @@ export function Metrics() {
                 <tr className="border-b border-line text-muted-fg">
                   <th scope="col" className="py-2 pr-3 font-medium">Red</th>
                   <th scope="col" className="py-2 pr-3 font-medium">Fecha</th>
+                  <th scope="col" className="py-2 pr-3 font-medium">Origen</th>
                   <th scope="col" className="py-2 pr-3 text-right font-medium">Seguidores</th>
                   <th scope="col" className="py-2 pr-3 text-right font-medium">Vistas</th>
                   <th scope="col" className="py-2 pr-3 text-right font-medium">Reacciones</th>
@@ -417,6 +440,23 @@ export function Metrics() {
                     <td className="py-3 pr-3 text-muted-fg">
                       {formatDateShort(s.date)}
                     </td>
+                    <td className="py-3 pr-3">
+                      <Pill
+                        tone={
+                          s.source === "meta"
+                            ? "blue"
+                            : s.source === "csv"
+                              ? "violet"
+                              : "neutral"
+                        }
+                      >
+                        {s.source === "meta"
+                          ? "Meta"
+                          : s.source === "csv"
+                            ? "CSV"
+                            : "Manual"}
+                      </Pill>
+                    </td>
                     <td className="py-3 pr-3 text-right text-ink">
                       {formatNumber(s.followers)}
                     </td>
@@ -424,13 +464,19 @@ export function Metrics() {
                       {formatNumber(s.views)}
                     </td>
                     <td className="py-3 pr-3 text-right text-ink">
-                      {formatNumber(s.reactions)}
+                      {s.reactions !== null
+                        ? formatNumber(s.reactions)
+                        : "Sin datos"}
                     </td>
                     <td className="py-3 pr-3 text-right text-ink">
-                      {formatNumber(s.comments)}
+                      {s.comments !== null
+                        ? formatNumber(s.comments)
+                        : "Sin datos"}
                     </td>
                     <td className="py-3 pr-3 text-right text-ink">
-                      {formatNumber(s.shares)}
+                      {s.shares !== null
+                        ? formatNumber(s.shares)
+                        : "Sin datos"}
                     </td>
                     <td className="py-3 text-right">
                       <button

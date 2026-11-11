@@ -16,12 +16,17 @@ export interface MetricSnapshot {
   period: string;
   followers: number;
   views: number;
-  reactions: number;
-  comments: number;
-  shares: number;
+  /** Null = la fuente no devolvió este dato (por ejemplo, la API de Meta
+   *  no desglosa reacciones/comentarios/compartidos a nivel de página).
+   *  Nunca se inventa un 0: la interfaz muestra "Sin datos". */
+  reactions: number | null;
+  comments: number | null;
+  shares: number | null;
   /** Total interactions as reported by the network, when the network
    *  reports it separately. Null when not reported. */
   interactions: number | null;
+  /** How the capture got here: manual form, CSV import, or Meta sync. */
+  source?: "manual" | "csv" | "meta";
 }
 
 export interface ContentItem {
