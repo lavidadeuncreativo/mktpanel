@@ -103,6 +103,10 @@ export function Header() {
   const [open, setOpen] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
 
+  // En Hoy la cabecera va sobre el degradado animado (como la barra
+  // superior de la referencia): fondo transparente y texto blanco.
+  const onGradient = screen === "hoy";
+
   // "General" ya no se ofrece en la interfaz; si por algún estado
   // heredado llegara, se cae a EVYM.
   const activeView: WorkspaceId = view === "general" ? "evym" : view;
@@ -128,16 +132,31 @@ export function Header() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 shrink-0 border-b border-line bg-page/85 backdrop-blur-xl">
+    <header
+      className={cn(
+        "sticky top-0 z-30 shrink-0 border-b backdrop-blur-xl",
+        onGradient
+          ? "border-white/20 bg-transparent"
+          : "border-line bg-page/85",
+      )}
+    >
       <div className="flex min-h-14 items-center gap-3 px-4 sm:px-6 lg:px-8">
-        <h1 className="text-[17px] font-semibold tracking-[-0.01em] whitespace-nowrap text-ink">
+        <h1
+          className={cn(
+            "text-[17px] font-semibold tracking-[-0.01em] whitespace-nowrap",
+            onGradient ? "text-white" : "text-ink",
+          )}
+        >
           {SCREEN_TITLES[screen]}
         </h1>
 
         <div className="relative min-w-0 flex-1 sm:max-w-md sm:flex-none sm:basis-80" ref={boxRef}>
           <div className="relative">
             <Search
-              className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-muted-fg"
+              className={cn(
+                "pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2",
+                onGradient ? "text-white/70" : "text-muted-fg",
+              )}
               aria-hidden="true"
             />
             <input
@@ -150,7 +169,12 @@ export function Header() {
               onFocus={() => setOpen(true)}
               placeholder="Buscar Reels, ideas, anécdotas…"
               aria-label="Buscar en el panel"
-              className="h-10 w-full rounded-full border border-line bg-control pr-4 pl-10 text-[14px] text-ink placeholder:text-muted-fg/80 focus:border-primary focus:bg-card focus:outline-none"
+              className={cn(
+                "h-10 w-full rounded-full border pr-4 pl-10 text-[14px] transition-colors duration-200 ease-apple focus:outline-none",
+                onGradient
+                  ? "border-white/30 bg-white/15 text-white placeholder:text-white/70 focus:border-white focus:bg-white/20"
+                  : "border-line bg-control text-ink placeholder:text-muted-fg/80 focus:border-primary focus:bg-card",
+              )}
             />
           </div>
           {open && query.trim().length >= 2 ? (
@@ -194,7 +218,12 @@ export function Header() {
 
         <div className="flex-1" />
 
-        <p className="hidden text-sm text-muted-fg md:block">
+        <p
+          className={cn(
+            "hidden text-sm md:block",
+            onGradient ? "text-white/80" : "text-muted-fg",
+          )}
+        >
           {activeView === "evym"
             ? "Entre Vivos y Muertos"
             : activeView === "antojo"
@@ -210,6 +239,7 @@ export function Header() {
 export function MobileNav() {
   const { screen, openScreen, view, setView } = usePanel();
   const activeView: WorkspaceId = view === "general" ? "evym" : view;
+  const onGradient = screen === "hoy";
 
   const items: { id: ScreenId; label: string }[] = [
     { id: "hoy", label: "Hoy" },
@@ -222,7 +252,14 @@ export function MobileNav() {
   ];
 
   return (
-    <div className="shrink-0 border-b border-line bg-card lg:hidden">
+    <div
+      className={cn(
+        "shrink-0 border-b lg:hidden",
+        onGradient
+          ? "border-white/20 bg-transparent"
+          : "border-line bg-card",
+      )}
+    >
       <div className="scroll-thin flex items-center gap-1 overflow-x-auto px-3 py-2">
         {items.map((item) => {
           const active = screen === item.id;
@@ -236,19 +273,32 @@ export function MobileNav() {
                 "min-h-9 shrink-0 cursor-pointer rounded-full px-3.5 text-sm font-medium whitespace-nowrap transition-colors",
                 active
                   ? "bg-ink text-white"
-                  : "bg-black/[0.05] text-ink/70 hover:text-ink",
+                  : onGradient
+                    ? "bg-white/15 text-white hover:text-white"
+                    : "bg-black/[0.05] text-ink/70 hover:text-ink",
               )}
             >
               {item.label}
             </button>
           );
         })}
-        <span className="mx-1 h-5 w-px shrink-0 bg-line" aria-hidden="true" />
+        <span
+          className={cn(
+            "mx-1 h-5 w-px shrink-0",
+            onGradient ? "bg-white/25" : "bg-line",
+          )}
+          aria-hidden="true"
+        />
         <select
           value={activeView}
           onChange={(e) => setView(e.target.value as WorkspaceId)}
           aria-label="Espacio de trabajo"
-          className="h-9 shrink-0 cursor-pointer rounded-full border border-line bg-card px-3 text-sm font-medium text-ink focus:border-primary focus:outline-none"
+          className={cn(
+            "h-9 shrink-0 cursor-pointer rounded-full border px-3 text-sm font-medium focus:border-primary focus:outline-none",
+            onGradient
+              ? "border-white/30 bg-white/15 text-white"
+              : "border-line bg-card text-ink",
+          )}
         >
           <option value="evym">EVYM</option>
           <option value="antojo">Antojo</option>

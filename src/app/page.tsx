@@ -13,6 +13,7 @@ import { Giveaway } from "@/components/modules/Giveaway";
 import { Tasks } from "@/components/modules/Tasks";
 import { Log } from "@/components/modules/Log";
 import { Connections } from "@/components/modules/Connections";
+import { cn } from "@/components/cn";
 
 function Screen() {
   const { screen, view } = usePanel();
@@ -69,7 +70,12 @@ function Screen() {
 }
 
 function Shell() {
-  const { resetAll } = usePanel();
+  const { resetAll, screen } = usePanel();
+
+  // En Hoy, el degradado animado es el fondo de toda la página (como
+  // en la referencia: las tarjetas blancas flotan sobre él). En las
+  // demás pantallas la página sigue siendo el papel claro.
+  const onGradient = screen === "hoy";
 
   const reset = () => {
     if (
@@ -84,7 +90,12 @@ function Shell() {
   return (
     <div className="shell-in flex min-h-screen bg-page">
       <Sidebar />
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div
+        className={cn(
+          "flex min-w-0 flex-1 flex-col",
+          onGradient && "hero-animated",
+        )}
+      >
         <Header />
         <MobileNav />
         <main className="min-w-0 flex-1 px-4 py-5 sm:px-6 lg:px-8 lg:py-6">
@@ -92,15 +103,32 @@ function Shell() {
             <Screen />
           </div>
         </main>
-        <footer className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-line bg-card px-4 py-2.5 sm:px-6 lg:px-8">
-          <p className="text-xs text-muted-fg">
+        <footer
+          className={cn(
+            "flex shrink-0 flex-wrap items-center justify-between gap-3 border-t px-4 py-2.5 sm:px-6 lg:px-8",
+            onGradient
+              ? "border-white/20 bg-transparent"
+              : "border-line bg-card",
+          )}
+        >
+          <p
+            className={cn(
+              "text-xs",
+              onGradient ? "text-white/75" : "text-muted-fg",
+            )}
+          >
             Panel — tus datos se guardan solo en este navegador
             (localStorage). Nada sale de aquí.
           </p>
           <button
             type="button"
             onClick={reset}
-            className="cursor-pointer text-xs font-medium text-muted-fg transition-opacity duration-200 ease-apple hover:text-danger hover:opacity-80"
+            className={cn(
+              "cursor-pointer text-xs font-medium transition-opacity duration-200 ease-apple hover:opacity-80",
+              onGradient
+                ? "text-white/85 hover:text-white"
+                : "text-muted-fg hover:text-danger",
+            )}
           >
             Restablecer datos iniciales
           </button>

@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import {
   ArrowDownRight,
   ArrowUpRight,
+  ChevronDown,
   ChevronRight,
   Clapperboard,
   Eye,
@@ -13,7 +15,7 @@ import {
 } from "lucide-react";
 import { usePanel } from "./panel-context";
 import type { WorkspaceId } from "@/lib/types";
-import { STATUS_LABELS } from "@/lib/types";
+import { STATUS_LABELS, WEEK_DAYS } from "@/lib/types";
 import {
   nextSuggestedIdea,
   previousByNetwork,
@@ -23,7 +25,6 @@ import {
   workspaceTotals,
 } from "@/lib/derive";
 import {
-  formatDateLong,
   formatDateShort,
   formatDeltaPct,
   formatNumber,
@@ -54,19 +55,43 @@ import { cn } from "./cn";
 /* lateral ("Agente") y en la tira de entrada al final del dashboard.  */
 /* ------------------------------------------------------------------ */
 
-function DeltaPill({ delta }: { delta: string | null }) {
-  if (!delta) return <Pill tone="neutral">Línea base</Pill>;
-  const up = delta.startsWith("+");
-  return (
-    <Pill tone={up ? "green" : "red"}>
-      {up ? (
-        <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
-      ) : (
-        <ArrowDownRight className="h-3.5 w-3.5" aria-hidden="true" />
-      )}
-      {delta}
-    </Pill>
-  );
+/** Línea de delta estilo referencia: texto pequeño con flecha, no píldora.
+ *  Sin segunda captura → "Línea base"; sin ninguna captura → "Sin datos"
+ *  (nunca se sugiere que exista una captura cuando no hay ninguna). */
+function DeltaLine({
+  delta,
+  noData,
+  line,
+}: {
+  delta: string | null;
+  noData: boolean;
+  line?: string;
+}) {
+  if (noData) {
+    return <p className="mt-2 text-[13px] text-muted-fg">Sin datos</p>;
+  }
+  if (delta) {
+    const up = delta.startsWith("+");
+    return (
+      <p
+        className={cn(
+          "mt-2 flex items-center gap-1 text-[13px] font-medium",
+          up ? "text-accent" : "text-danger",
+        )}
+      >
+        {up ? (
+          <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
+        ) : (
+          <ArrowDownRight className="h-3.5 w-3.5" aria-hidden="true" />
+        )}
+        {delta} vs. captura anterior
+      </p>
+    );
+  }
+  if (line) {
+    return <p className="mt-2 text-[13px] text-muted-fg">{line}</p>;
+  }
+  return <p className="mt-2 text-[13px] text-muted-fg">Línea base</p>;
 }
 
 function MetricCard({
@@ -74,13 +99,15 @@ function MetricCard({
   label,
   value,
   delta,
-  note,
+  noData,
+  line,
 }: {
   icon: React.ReactNode;
   label: string;
   value: number;
   delta: string | null;
-  note: string;
+  noData: boolean;
+  line?: string;
 }) {
   return (
     <div className="surface surface-hover p-5">
@@ -93,10 +120,7 @@ function MetricCard({
       <p className="mt-2 text-[28px] leading-none font-semibold tracking-[-0.02em] tabular-nums text-ink">
         <AnimatedNumber value={value} format={formatNumber} />
       </p>
-      <div className="mt-2 flex items-center gap-2">
-        <DeltaPill delta={delta} />
-      </div>
-      <p className="mt-1.5 text-[13px] text-muted-fg">{note}</p>
+      <DeltaLine delta={delta} noData={noData} line={line} />
     </div>
   );
 }
@@ -133,6 +157,21 @@ export function Dashboard() {
     (c) => c.status === "publicado",
   );
 
+  // Fechas reales de captura, para el selector de periodo del Resumen.
+  const captureDates = [...new Set(ws.snapshots.map((s) => s.date))].sort();
+  const [overviewDate, setOverviewDate] = useState("all");
+  const overviewSnapshots =
+    overviewDate === "all"
+      ? ws.snapshots
+      : ws.snapshots.filter((s) => s.date === overviewDate);
+
+  // Días de la semana con un Reel publicado (mini barras de crecimiento).
+  const publishedDays = new Set(
+    ws.content
+      .filter((c) => c.status === "publicado" && c.dayIndex !== null)
+      .map((c) => c.dayIndex as number),
+  );
+
   const wsName =
     wsId === "evym"
       ? "Entre Vivos y Muertos"
@@ -165,23 +204,19 @@ export function Dashboard() {
 
   return (
     <div className="space-y-4">
-      {/* ---------- Héroe: degradado animado, saludo, acciones,
-           tarjeta de resumen en vidrio ---------- */}
-      <section
-        aria-label="Resumen del día"
-        className="hero-animated relative overflow-hidden rounded-[24px] px-6 py-8 text-white sm:px-8"
-      >
+      {/* ---------- Héroe: el degradado animado ya es el fondo de la
+           página en Hoy (ver page.tsx); aquí solo van el saludo grande,
+           las acciones y la tarjeta de resumen en vidrio, como en la
+           referencia. ---------- */}
+      <section aria-label="Resumen del día" className="relative px-2 pt-4 pb-6 text-white sm:px-4">
         <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0">
             <p className="text-sm font-medium text-white/80">
-              {formatDateLong(iso)}
-            </p>
-            <h2 className="mt-1 text-[34px] leading-tight font-semibold tracking-[-0.02em] text-white sm:text-[40px]">
-              Hola, Isra
-            </h2>
-            <p className="mt-1 max-w-md text-[15px] leading-relaxed text-white/85">
               Esto es lo que tienes hoy en {wsName}.
             </p>
+            <h2 className="mt-1 text-[52px] leading-[1.05] font-semibold tracking-[-0.02em] text-white sm:text-[56px]">
+              Hola, Isra
+            </h2>
             <div className="mt-5 flex flex-wrap gap-2.5">
               <button
                 type="button"
@@ -201,8 +236,18 @@ export function Dashboard() {
             </div>
           </div>
 
-          {/* Tarjeta de resumen en vidrio, como la tarjeta VISA */}
-          <div className="w-full max-w-[320px] shrink-0 rounded-[16px] border border-white/25 bg-white/15 p-5 backdrop-blur-md">
+          {/* Tarjeta de resumen en vidrio, con tarjetas apiladas detrás
+              (profundidad, como en la referencia). */}
+          <div className="relative w-full max-w-[320px] shrink-0">
+            <div
+              aria-hidden="true"
+              className="absolute inset-x-3 -top-3 h-full rotate-[2deg] rounded-[16px] border border-white/15 bg-white/10"
+            />
+            <div
+              aria-hidden="true"
+              className="absolute inset-x-1.5 -top-1.5 h-full -rotate-[1.5deg] rounded-[16px] border border-white/20 bg-white/10"
+            />
+            <div className="relative rounded-[16px] border border-white/25 bg-white/15 p-5 backdrop-blur-md">
             {hasSnapshots ? (
               <>
                 <p className="text-[13px] font-medium text-white/80">
@@ -265,6 +310,7 @@ export function Dashboard() {
                 </div>
               </>
             )}
+            </div>
           </div>
         </div>
       </section>
@@ -277,17 +323,41 @@ export function Dashboard() {
               <h3 className="text-base font-semibold tracking-[-0.01em] text-ink">
                 Resumen
               </h3>
-              <p className="mt-0.5 text-sm text-muted-fg">
+              <p className="mt-1 text-[40px] leading-none font-semibold tracking-[-0.02em] tabular-nums text-ink">
+                <AnimatedNumber value={totals.views} format={formatNumber} />
+              </p>
+              <p className="mt-1.5 text-sm text-muted-fg">
                 Vistas por captura registrada.
               </p>
             </div>
-            <p className="text-[28px] leading-none font-semibold tracking-[-0.02em] tabular-nums text-ink">
-              <AnimatedNumber value={totals.views} format={formatNumber} />
-            </p>
+            {hasSnapshots ? (
+              <div className="relative shrink-0">
+                <label htmlFor="overview-period" className="sr-only">
+                  Periodo del resumen
+                </label>
+                <select
+                  id="overview-period"
+                  value={overviewDate}
+                  onChange={(e) => setOverviewDate(e.target.value)}
+                  className="h-9 cursor-pointer appearance-none rounded-full border border-line bg-control pr-8 pl-3.5 text-sm font-medium text-ink focus:border-primary focus:outline-none"
+                >
+                  <option value="all">Todas las capturas</option>
+                  {captureDates.map((d) => (
+                    <option key={d} value={d}>
+                      {formatDateShort(d)}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown
+                  className="pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-muted-fg"
+                  aria-hidden="true"
+                />
+              </div>
+            ) : null}
           </div>
           {hasSnapshots ? (
             <>
-              <ViewsBars snapshots={ws.snapshots} />
+              <ViewsBars snapshots={overviewSnapshots} />
               <p className="text-[13px] text-muted-fg">
                 Línea base: registra una segunda captura (o sincroniza con
                 Meta en Conexiones) para ver la tendencia.
@@ -314,28 +384,29 @@ export function Dashboard() {
             label="Vistas"
             value={totals.views}
             delta={viewsDelta}
-            note="En la última captura"
+            noData={!hasSnapshots}
           />
           <MetricCard
             icon={<Users className="h-4 w-4" aria-hidden="true" />}
             label="Seguidores"
             value={totals.followers}
             delta={followersDelta}
-            note="En la última captura"
+            noData={!hasSnapshots}
           />
           <MetricCard
             icon={<MessageSquare className="h-4 w-4" aria-hidden="true" />}
             label="Comentarios"
             value={totals.comments}
             delta={commentsDelta}
-            note="En la última captura"
+            noData={!hasSnapshots}
           />
           <MetricCard
             icon={<Flame className="h-4 w-4" aria-hidden="true" />}
             label="Racha"
             value={streakCount}
             delta={null}
-            note={
+            noData={!hasSnapshots}
+            line={
               streakCount > 0
                 ? "Publica hoy para mantenerla"
                 : "Publica para empezar tu racha"
@@ -386,9 +457,16 @@ export function Dashboard() {
                       {item.publishDate
                         ? formatDateShort(item.publishDate)
                         : "Sin fecha"}
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-right">
+                    <span className="block text-[15px] leading-tight font-semibold tabular-nums text-ink">
                       {item.views !== null
-                        ? ` · ${formatNumber(item.views)} vistas`
-                        : ""}
+                        ? formatNumber(item.views)
+                        : "—"}
+                    </span>
+                    <span className="block text-xs text-muted-fg">
+                      vistas
                     </span>
                   </span>
                   <Pill tone="green">
@@ -414,6 +492,38 @@ export function Dashboard() {
           <div className="mt-3">
             <Progress value={week.pct} />
           </div>
+          {/* Mini barras Lun–Dom: el día con Reel publicado va en rojo. */}
+          <div
+            className="mt-4 flex items-end gap-1.5"
+            aria-label="Reels publicados por día de la semana"
+          >
+            {WEEK_DAYS.map((day, i) => (
+              <div
+                key={day}
+                className="flex flex-1 flex-col items-center gap-1"
+              >
+                <div
+                  className={cn(
+                    "h-9 w-full rounded-[3px]",
+                    publishedDays.has(i) ? "bg-primary" : "bg-control",
+                  )}
+                  title={`${day}: ${publishedDays.has(i) ? "publicado" : "sin publicar"}`}
+                />
+                <span className="text-[10px] font-medium text-muted-fg">
+                  {day.slice(0, 1)}
+                </span>
+              </div>
+            ))}
+          </div>
+          {streakCount > 0 ? (
+            <div className="mt-3">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-ink px-2.5 py-1 text-xs font-semibold text-white">
+                <Flame className="h-3.5 w-3.5" aria-hidden="true" />
+                Racha de {streakCount}{" "}
+                {streakCount === 1 ? "día" : "días"}
+              </span>
+            </div>
+          ) : null}
           {topIdea ? (
             <>
               <p className="mt-4 text-sm font-medium text-muted-fg">

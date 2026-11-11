@@ -544,6 +544,11 @@ interface ChatMsg {
   id: string;
   role: "user" | "agent";
   text: string;
+  /** Saludo inicial: su texto se re-deriva del espacio activo en cada
+   *  render, así que cambiar de espacio (EVYM / Antojo / Personal) sin
+   *  salir de la pantalla actualiza el saludo con el espacio y las
+   *  cifras reales de ese momento. */
+  greeting?: boolean;
   widget?: AgentWidgetKind;
   action?: { label: string; screen: ScreenId };
 }
@@ -591,6 +596,9 @@ export function AgentChat() {
         : "Perfil personal";
 
   // Saludo inicial, solo en el cliente (evita desajustes de hidratación).
+  // El texto del saludo no se congela aquí: se re-deriva en cada render
+  // desde el espacio activo, así que al cambiar de espacio el saludo
+  // siempre nombra el espacio actual con sus cifras reales.
   useEffect(() => {
     if (initializedRef.current) return;
     initializedRef.current = true;
@@ -599,10 +607,10 @@ export function AgentChat() {
         id: uid(),
         role: "agent",
         text: greetingText(data, wsId, iso),
+        greeting: true,
         widget: "reel",
       },
     ]);
-    // Solo al montar: el saludo no se recalcula al cambiar de espacio.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -732,7 +740,9 @@ export function AgentChat() {
               </span>
               <div className="min-w-0 flex-1">
                 <p className="text-[15px] leading-relaxed text-ink">
-                  {msg.text}
+                  {msg.greeting
+                    ? greetingText(data, wsId, iso)
+                    : msg.text}
                 </p>
                 {msg.widget ? (
                   <div className="mt-3">

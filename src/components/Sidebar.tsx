@@ -137,7 +137,10 @@ export function Sidebar() {
         </ul>
       </nav>
 
-      <div className="border-t border-line px-5 py-4">
+      {/* Nota de privacidad: con aire abajo para que el botón fijo de
+          las herramientas de desarrollo (esquina inferior izquierda)
+          nunca tape el texto, en cualquier alto de ventana. */}
+      <div className="border-t border-line px-5 pt-4 pb-24">
         <p className="text-[11px] leading-snug text-muted-fg">
           Tus datos viven solo en este navegador. Nada sale de aquí.
         </p>
