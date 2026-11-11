@@ -9,13 +9,13 @@ import {
   useEffect,
   useRef,
 } from "react";
-import { X } from "lucide-react";
+import { ChevronRight, X } from "lucide-react";
 import { cn } from "./cn";
 
 /* ---------- Button: capsule, Apple blue for the primary action ---------- */
 
 type ButtonVariant = "default" | "outline" | "ghost" | "danger" | "dark";
-type ButtonSize = "md" | "sm" | "icon";
+type ButtonSize = "md" | "sm" | "icon" | "lg";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -32,10 +32,14 @@ const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
   dark: "bg-ink text-white hover:bg-[#2c2c2e] active:bg-black",
 };
 
+/* The rounding lives in the size: md/sm/icon stay capsule, lg is the big
+   iOS rounded-rectangle action (one per screen). cn() is a plain join,
+   so rounding must never be set in two places at once. */
 const BUTTON_SIZES: Record<ButtonSize, string> = {
-  md: "min-h-11 px-5 text-[15px]",
-  sm: "min-h-9 px-3.5 text-sm",
-  icon: "h-11 w-11 p-0",
+  md: "min-h-11 rounded-full px-5 text-[15px]",
+  sm: "min-h-9 rounded-full px-3.5 text-sm",
+  icon: "h-11 w-11 rounded-full p-0",
+  lg: "min-h-[52px] w-full rounded-[14px] px-6 text-[17px] font-semibold",
 };
 
 export function Button({
@@ -49,7 +53,7 @@ export function Button({
     <button
       type={type}
       className={cn(
-        "inline-flex cursor-pointer items-center justify-center gap-2 rounded-full font-medium transition-colors duration-200 ease-apple disabled:cursor-not-allowed disabled:opacity-50",
+        "inline-flex cursor-pointer items-center justify-center gap-2 font-medium transition-colors duration-200 ease-apple disabled:cursor-not-allowed disabled:opacity-50",
         BUTTON_VARIANTS[variant],
         BUTTON_SIZES[size],
         className,
@@ -265,6 +269,27 @@ export function SegmentedControl<T extends string>({
 
 /* ---------- Switch (iOS toggle) ---------- */
 
+/* Visual only: when the whole row is the button, the switch must not be
+   a nested <button>. The row carries the click and the aria-label. */
+export function SwitchVisual({ checked }: { checked: boolean }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        "relative block h-8 w-[52px] shrink-0 rounded-full transition-colors duration-200 ease-apple",
+        checked ? "bg-accent" : "bg-[#e9e9ea]",
+      )}
+    >
+      <span
+        className={cn(
+          "absolute top-0.5 left-0.5 block h-7 w-7 rounded-full bg-white shadow-[0_1px_4px_rgba(0,0,0,0.25)] transition-transform duration-200 ease-apple",
+          checked && "translate-x-5",
+        )}
+      />
+    </span>
+  );
+}
+
 export function Switch({
   checked,
   onChange,
@@ -281,18 +306,146 @@ export function Switch({
       aria-checked={checked}
       aria-label={label}
       onClick={() => onChange(!checked)}
+      className="shrink-0 cursor-pointer rounded-full"
+    >
+      <SwitchVisual checked={checked} />
+    </button>
+  );
+}
+
+/* ---------- iOS grouped lists: Ajustes-style rows ----------
+   Un grupo = un contenedor blanco redondeado con filas de 44pt y
+   separadores inset (el divisor empieza después del icono, como en
+   Ajustes). Lo tocable lleva chevron o switch; lo demás es texto plano. */
+
+export function SectionHeader({
+  title,
+  meta,
+}: {
+  title: string;
+  /** Plain secondary text on the right (a count, never a tiny button). */
+  meta?: string;
+}) {
+  return (
+    <div className="flex items-baseline justify-between gap-3 px-4 pb-1.5">
+      <h2 className="text-[13px] font-semibold text-muted-fg">{title}</h2>
+      {meta ? (
+        <span className="text-[13px] text-muted-fg">{meta}</span>
+      ) : null}
+    </div>
+  );
+}
+
+export function GroupedList({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
       className={cn(
-        "relative h-8 w-[52px] shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-apple",
-        checked ? "bg-accent" : "bg-[#e9e9ea]",
+        "overflow-hidden rounded-[20px] border border-line/60 bg-white",
+        className,
       )}
     >
+      {children}
+    </div>
+  );
+}
+
+export function RowChevron() {
+  return (
+    <ChevronRight
+      className="h-5 w-5 shrink-0 text-[#c7c7cc]"
+      aria-hidden="true"
+    />
+  );
+}
+
+export function GroupedRow({
+  icon,
+  title,
+  titleClassName,
+  subtitle,
+  accessory,
+  onClick,
+  divider = false,
+  ariaLabel,
+  className,
+}: {
+  /** Rendered inside the standard 29px icon chip. Omit for text-only rows. */
+  icon?: ReactNode;
+  title: string;
+  titleClassName?: string;
+  subtitle?: string;
+  accessory?: ReactNode;
+  /** Present = the whole 44pt row is tappable (chevron/switch affordance). */
+  onClick?: () => void;
+  /** Inset top divider: true for every row except the first. */
+  divider?: boolean;
+  ariaLabel?: string;
+  className?: string;
+}) {
+  const content = (
+    <>
+      {icon ? (
+        <span
+          className="flex w-[52px] shrink-0 items-center justify-center"
+          aria-hidden="true"
+        >
+          <span className="flex h-[29px] w-[29px] items-center justify-center rounded-[7px] bg-control text-ink">
+            {icon}
+          </span>
+        </span>
+      ) : null}
       <span
         className={cn(
-          "absolute top-0.5 left-0.5 block h-7 w-7 rounded-full bg-white shadow-[0_1px_4px_rgba(0,0,0,0.25)] transition-transform duration-200 ease-apple",
-          checked && "translate-x-5",
+          "flex min-h-11 flex-1 items-center gap-3 py-2",
+          icon ? "pr-4" : "px-4",
+          divider && "border-t border-line/70",
         )}
-      />
-    </button>
+      >
+        <span className="min-w-0 flex-1">
+          <span
+            className={cn(
+              "block truncate text-[17px] leading-snug text-ink",
+              titleClassName,
+            )}
+          >
+            {title}
+          </span>
+          {subtitle ? (
+            <span className="block truncate text-[15px] leading-snug text-muted-fg">
+              {subtitle}
+            </span>
+          ) : null}
+        </span>
+        {accessory}
+      </span>
+    </>
+  );
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        aria-label={ariaLabel}
+        className={cn(
+          "flex w-full cursor-pointer items-stretch text-left transition-colors duration-150 ease-apple hover:bg-black/[0.03] active:bg-black/[0.05]",
+          className,
+        )}
+      >
+        {content}
+      </button>
+    );
+  }
+  return (
+    <div className={cn("flex w-full items-stretch text-left", className)}>
+      {content}
+    </div>
   );
 }
 

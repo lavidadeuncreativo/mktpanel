@@ -4,11 +4,13 @@ import { Check } from "lucide-react";
 import type { ContentItem, WorkspaceData } from "@/lib/types";
 import { WEEK_DAYS } from "@/lib/types";
 import { weekPlan } from "@/lib/derive";
-import { cn } from "./cn";
+import { GroupedList, GroupedRow, RowChevron } from "./ui";
 
 /**
- * The 7 slots of the week. One cell per day: the Reel that belongs there,
- * its state, and a marker on today. Shared by Hoy, Resumen y Contenido.
+ * La semana como lista agrupada estilo iOS: una fila de 44pt por día,
+ * con el Reel que le toca y su estado. El día de hoy va en azul, lo
+ * publicado lleva palomita verde y la fila se puede tocar cuando tiene
+ * un Reel. Compartida por Hoy, Resumen y Contenido.
  */
 export function WeekPlan({
   ws,
@@ -23,62 +25,41 @@ export function WeekPlan({
   const plan = weekPlan(ws);
 
   return (
-    <div className="grid grid-cols-7 gap-2">
-      {plan.map(({ dayIndex, item }) => {
+    <GroupedList>
+      {plan.map(({ dayIndex, item }, i) => {
         const isToday = dayIndex === today;
         const published = item?.status === "publicado";
+        const tappable = Boolean(item && onSelect);
         return (
-          <button
+          <GroupedRow
             key={dayIndex}
-            type="button"
-            disabled={!item || !onSelect}
-            onClick={() => item && onSelect?.(item)}
-            aria-label={
+            divider={i > 0}
+            title={
+              isToday
+                ? `${WEEK_DAYS[dayIndex]} · Hoy`
+                : WEEK_DAYS[dayIndex]
+            }
+            titleClassName={isToday ? "font-semibold text-primary" : undefined}
+            subtitle={item ? item.title : "Sin tema"}
+            onClick={tappable ? () => onSelect?.(item!) : undefined}
+            ariaLabel={
               item
                 ? `${WEEK_DAYS[dayIndex]}: ${item.title}`
                 : `${WEEK_DAYS[dayIndex]}: sin tema`
             }
-            className={cn(
-              "min-w-0 rounded-[14px] px-2 py-3 text-center transition-colors duration-200 ease-apple",
-              item
-                ? published
-                  ? "bg-primary-soft"
-                  : "bg-control/60 hover:bg-control"
-                : "border border-dashed border-line",
-              onSelect && item && "cursor-pointer",
-            )}
-          >
-            <span className="flex items-center justify-center gap-1">
-              <span
-                className={cn(
-                  "text-xs font-semibold",
-                  isToday ? "text-primary" : "text-muted-fg",
-                )}
-              >
-                {WEEK_DAYS[dayIndex]}
-              </span>
-              {isToday ? (
-                <span className="h-1.5 w-1.5 rounded-full bg-primary" aria-hidden="true" />
-              ) : null}
-            </span>
-            <span
-              className={cn(
-                "mt-1.5 flex items-center justify-center gap-1 truncate text-xs font-medium",
-                item ? "text-ink" : "text-muted-fg/70",
-              )}
-              title={item ? item.title : "Sin tema"}
-            >
-              {published ? (
+            accessory={
+              published ? (
                 <Check
-                  className="h-3.5 w-3.5 shrink-0 text-accent-text"
+                  className="h-5 w-5 shrink-0 text-accent"
                   aria-hidden="true"
                 />
-              ) : null}
-              {item ? item.title : "Sin tema"}
-            </span>
-          </button>
+              ) : tappable ? (
+                <RowChevron />
+              ) : undefined
+            }
+          />
         );
       })}
-    </div>
+    </GroupedList>
   );
 }

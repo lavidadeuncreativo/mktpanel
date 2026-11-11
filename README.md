@@ -41,34 +41,42 @@ La vista única cabe en una pantalla (100vh en escritorio, sin scroll de
 página). Arriba solo hay un control para cambiar de espacio (EVYM / Antojo
 / Personal): sin sidebar, sin buscador, sin navegación inferior.
 
-- **Hoy (lo único grande):** el Reel del día según el día de la semana y el
-  estado del pipeline (guion / imágenes / edición / publicar), con el
-  siguiente paso en un botón y la racha de días consecutivos con un Reel
-  publicado. Abajo, lo último publicado con sus reproducciones.
-- **El número:** vistas y seguidores en grande, por red, con veredicto:
-  cuánto subieron o bajaron vs la captura anterior (o "Línea base" si solo
-  hay una captura) y qué toca publicar hoy. El panel dice qué hacer, no
-  solo muestra datos.
-- **La semana:** los 7 espacios en celdas, con el día de hoy marcado y el
-  avance (x de 7). Tocar un día abre el pipeline.
-- **Siguiente tema:** el tema más fuerte del banco de Ideas con botón para
-  pasarlo a guion.
-- **A continuación:** la cola de publicación ordenada.
-- **Checklist de hoy:** lo que falta para que el Reel de hoy salga bien,
-  con switches estilo iOS.
-- **Los módulos, en una línea discreta al pie:** Resumen, Métricas,
-  Contenido, Ideas, Giveaway (solo EVYM), Pendientes y Bitácora. Cada uno
-  se abre como detalle (overlay grande con su propio scroll) desde su
-  tarjeta o desde esa línea. Su contenido y su lógica no cambiaron: Métricas
-  sigue con capturas manuales e importar CSV de Business Suite, Contenido
-  con el pipeline, Ideas con el banco, Giveaway con anécdotas y ganadora,
-  Pendientes con el checklist de publicación, Bitácora con el registro y
-  Resumen con KPIs, gráficas y pipeline.
+- **Hoy (el héroe, lo único grande):** título grande "Hoy" con la
+  fecha abajo, y el Reel del día en una sola superficie blanca: su
+  estado, su título en grande, el siguiente paso y UNA sola acción
+  principal — un botón azul grande y lleno (52pt). Abajo, en texto
+  secundario, la racha y lo último publicado. Nada más compite con él.
+- **El número:** sin tarjeta ni gráfica que descifrar. Un solo numeral
+  dominante (vistas en total, 56–64pt), los secundarios pequeños y en
+  gris (seguidores, por red), el veredicto (sube o baja vs la captura
+  anterior) y qué toca publicar hoy.
+- **La semana:** lista agrupada estilo Ajustes de iOS, una fila de 44pt
+  por día con su Reel y su estado. El día de hoy va en azul, lo
+  publicado lleva palomita verde, y tocar una fila con Reel abre el
+  pipeline. Lo mismo aplica en Resumen y Contenido: el plan semanal es
+  la misma lista en los tres sitios.
+- **Siguiente tema:** una fila con su puntuación y un botón de texto
+  azul para pasarlo a guion (no compite con la acción principal).
+- **A continuación:** la cola de publicación como filas (máx. 3) con
+  chevron, y una fila final "Ver pipeline".
+- **Checklist de hoy:** filas con switch iOS; tocar toda la fila marca
+  o desmarca (el objetivo es la fila completa de 44pt, no solo el
+  switch). Lo hecho va tachado y en gris.
+- **Más:** los módulos (Resumen, Métricas, Contenido, Ideas, Giveaway
+  solo en EVYM, Pendientes, Bitácora) son una lista agrupada con icono
+  y chevron: se ve que se pueden tocar. Cada uno se abre como detalle
+  (overlay grande con su propio scroll). Su contenido y su lógica no
+  cambiaron: Métricas sigue con capturas manuales e importar CSV de
+  Business Suite, Contenido con el pipeline, Ideas con el banco,
+  Giveaway con anécdotas y ganadora, Pendientes con el checklist de
+  publicación, Bitácora con el registro y Resumen con KPIs, gráficas y
+  pipeline.
 
 En móvil lo que importa (Hoy, el número y la semana) queda arriba del
-primer pantallazo; lo secundario (siguiente tema, cola, checklist) se
-colapsa detrás de su título y se abre al tocarlo. En escritorio todo está
-siempre abierto: es la rejilla de una pantalla.
+primer pantallazo y la acción principal es lo primero que se ve, a lo
+ancho y con 52pt de alto. En escritorio (1440x900) la página no tiene
+scroll: la columna izquierda (héroe + número) nunca se mueve y la
+columna derecha (las listas) tiene su propio scroll interno.
 
 ## Datos iniciales
 
@@ -86,24 +94,44 @@ sola captura se muestra "Línea base". Nada más está inventado.
 
 ## Diseño
 
-Estilo Apple (Human Interface Guidelines), criterio de los skills
-`frontend-design` y `ui-ux-pro-max` (guardados en
-`~/workspace/custom-skills/`):
+Estilo Apple (Human Interface Guidelines) aplicado de verdad, no solo
+los colores — el fallo de la versión anterior era una rejilla de
+tarjetas idénticas donde todo se veía igual y nada se entendía:
 
-- Tipografía grande y limpia con la pila del sistema (aproximación a SF Pro),
-  titulares semibold con tracking ajustado, base 16px.
-- Mucho aire: secciones con respiración, contenido protagonista, chrome
-  mínimo.
-- Superficies traslúcidas tipo frosted glass (`backdrop-blur`, blancos al
-  70–80% sobre fondo gris muy claro), divisores finos en vez de bordes
+- **Large Title:** "Hoy" en 34pt negrita con la fecha como subtítulo.
+  Al abrir se sabe en un segundo en qué pantalla estás.
+- **Un héroe, no una rejilla de iguales:** el Reel del día es la única
+  superficie grande; cada zona tiene su propio tratamiento y ritmo
+  (héroe blanco, número en tipografía desnuda, listas agrupadas). Nada
+  de tarjetas idénticas.
+- **Listas agrupadas estilo Ajustes de iOS:** filas de 44pt con
+  separadores inset, icono en chip, título de 17pt, subtítulo gris de
+  15pt y encabezados de sección pequeños en gris (13pt).
+- **Affordances claras:** lo tocable lleva chevron, botón lleno o
+  switch; lo que no se toca es texto plano. Nadie adivina.
+- **Una sola acción principal por pantalla:** el siguiente paso del Reel
+  de hoy es el único botón azul grande y lleno. Todo lo demás es texto
+  azul o fila con chevron.
+- **Color semántico y nada más:** azul = acción, verde = publicado o
+  hecho, rojo = necesita atención, gris = secundario. Sin color
+  decorativo.
+- **Jerarquía tipográfica real:** título grande 34, título 22–30,
+  cuerpo 17, secundario 15, pie 13. Objetivos táctiles de 44pt mínimo.
+- **Móvil primero:** se revisa en el teléfono, con una mano; la acción
+  principal es lo primero que se ve. En escritorio (1440x900) la página
+  no tiene scroll.
+- Tipografía con la pila del sistema (aproximación a SF Pro), titulares
+  semibold con tracking ajustado, base 16px.
+- Mucho aire: contenido protagonista, chrome mínimo. Superficies
+  traslúcidas tipo frosted glass (`backdrop-blur`, blancos al 70–80%
+  sobre fondo gris muy claro), divisores finos en vez de bordes
   pesados, nada de sombras fuertes.
-- Casi nada de color: un solo acento, azul Apple `#0071E3`, para acciones
-  y enlaces. Texto casi negro `#1D1D1F`, secundario `#6E6E73`, divisores
-  `#D2D2D7`. Verde `#34C759`, rojo `#FF3B30`, ámbar `#FF9500` y violeta
-  `#AF52DE` solo para estados.
-- Controles refinados: botones cápsula, pills suaves, switches iOS,
-  segment control para el selector de espacio. Movimiento suave tipo
-  spring (200–300ms, ease-out).
+- Texto casi negro `#1D1D1F`, secundario `#6E6E73`, divisores `#D2D2D7`.
+  Azul Apple `#0071E3` para acciones. Verde `#34C759`, rojo `#FF3B30`,
+  ámbar `#FF9500` y violeta `#AF52DE` solo para estados.
+- Controles refinados: botón de acción grande (52pt, esquinas de 14px),
+  botones cápsula, switches iOS, segment control para el selector de
+  espacio. Movimiento suave tipo spring (200–300ms, ease-out).
 - Sin tells de plantilla: nada de tarjetas idénticas con la misma sombra,
   ni mayúsculas con tracking, ni "A · B", ni flechas en enlaces.
 - Vista única, criterio Jobs: una pantalla responde qué publico hoy, cómo
