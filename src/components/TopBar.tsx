@@ -193,8 +193,12 @@ export function TopBar() {
       <div className="flex min-h-14 flex-wrap items-center gap-x-4 gap-y-2 px-4 pt-2 sm:px-6 lg:px-8">
         <button
           type="button"
-          onClick={() => openScreen("hoy")}
-          aria-label="Ir a Hoy"
+          onClick={() => {
+            // La marca es el inicio: siempre al resumen general.
+            setView("general");
+            openScreen("hoy");
+          }}
+          aria-label="Ir al inicio"
           className="flex shrink-0 cursor-pointer items-center gap-2.5 rounded-lg"
         >
           <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-ink text-[13px] font-bold text-white">

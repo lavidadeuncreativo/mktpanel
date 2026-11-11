@@ -478,3 +478,61 @@ export function buildAggregateBriefing(
     recommendation,
   };
 }
+
+/* ------------------------------------------------------------------ */
+/* La línea de Jarvis: el resumen general en lenguaje llano, en       */
+/* 2-3 frases cortas, para la primera pantalla. Se compone del        */
+/* briefing agregado (mismas reglas, mismos números): totales, el      */
+/* contenido más visto y qué toca hoy. Nada nuevo que calcular, nada   */
+/* que pueda desincronizarse del briefing.                             */
+/* ------------------------------------------------------------------ */
+
+export function buildJarvisLine(
+  data: PanelData,
+  iso: string,
+): { dateLine: string; sentences: string[] } {
+  const b = buildAggregateBriefing(data, iso);
+  const totals = aggregateTotals(data);
+  const sentences: string[] = [];
+
+  // Totales, en una frase corta: la cifra es lo que importa.
+  if (WORKSPACE_IDS.some((id) => data[id].snapshots.length > 0)) {
+    sentences.push(
+      `${formatNumber(totals.views)} vistas · ${formatNumber(totals.followers)} seguidores.`,
+    );
+  } else {
+    sentences.push("Todavía no hay métricas registradas en ninguna cuenta.");
+  }
+
+  // El contenido más visto, también corto: el detalle vive en la
+  // tarjeta de alertas, aquí solo el nombre y la cifra.
+  const allPublished = WORKSPACE_IDS.flatMap((id) =>
+    data[id].content.filter(
+      (c) => c.status === "publicado" && c.views !== null,
+    ),
+  );
+  const topReel =
+    allPublished.length > 0
+      ? [...allPublished].sort(
+          (a, b) => (b.views as number) - (a.views as number),
+        )[0]
+      : null;
+  if (topReel) {
+    sentences.push(
+      `Lo más visto: ${topReel.title}, ${formatNumber(topReel.views as number)} vistas.`,
+    );
+  }
+
+  // Qué toca hoy, en una frase corta: el espacio ya se ve en las
+  // tarjetas de abajo, y "en ninguna cuenta" sobra en la vista general.
+  sentences.push(
+    b.today.headline
+      .replace(/^Hoy toca en [^:]+: /, "Hoy toca ")
+      .replace(/^Hoy ya salió en [^:]+: /, "Hoy ya salió: ")
+      .replace(
+        "Hoy no hay Reel asignado en ninguna cuenta.",
+        "Hoy no hay Reel asignado.",
+      ),
+  );
+  return { dateLine: b.dateLine, sentences };
+}

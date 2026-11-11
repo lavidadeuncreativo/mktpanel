@@ -36,9 +36,11 @@
   --color-violet-soft: rgb(109 40 217 / 0.08);
   --color-violet-text: #5b21b6;
 
-  /* System stack: the closest thing to SF Pro on every platform */
-  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text",
-    "SF Pro Display", "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial,
+  /* System stack: Helvetica Neue primero — es la tipografía que
+     Israel quiere sentir, como en las páginas de Apple. En Mac y en
+     iPhone existe y manda; fuera de ahí cae a SF Pro / Segoe / Roboto. */
+  --font-sans: "Helvetica Neue", -apple-system, BlinkMacSystemFont,
+    "SF Pro Display", "SF Pro Text", "Inter", "Segoe UI", Roboto, Arial,
     sans-serif;
 
   /* Apple's standard spring-ish easing */
@@ -108,26 +110,31 @@ h2 {
 }
 
 /* ------------------------------------------------------------------ */
-/* Héroe animado: el degradado cálido cambia de tono y de color de    */
-/* forma lenta y continua (rojo → naranja → ámbar → rosa y vuelta),    */
-/* moviendo la posición de un degradado sobredimensionado. 28 s por    */
-/* ciclo, ida y vuelta, sin cortes: el inicio y el final del ciclo     */
-/* son el mismo punto, así que el bucle es invisible. La única        */
-/* animación no disparada por el usuario en toda la app — todo lo      */
-/* demás es movimiento que responde a una acción.                      */
+/* Héroe animado: el degradado recorre TODO el espectro (rojo →        */
+/* naranja → ámbar → verde → teal → azul → violeta → rosa → rojo),    */
+/* lento y continuo, moviendo la posición de un degradado              */
+/* sobredimensionado. 36 s por ciclo, ida y vuelta, sin cortes: con   */
+/* "alternate" el bucle vuelve por donde vino, así que nunca hay un    */
+/* salto. Las paradas son profundas y saturadas a propósito: el texto  */
+/* blanco del saludo tiene que leerse sobre cualquier color, y la      */
+/* legibilidad manda sobre lo chillón. La única animación no           */
+/* disparada por el usuario en toda la app.                            */
 /* ------------------------------------------------------------------ */
 .hero-animated {
   background-image: linear-gradient(
     115deg,
-    #991b1b,
-    #dc2626 26%,
-    #ea580c 50%,
-    #f59e0b 72%,
-    #e11d48 100%
+    #7f1d1d,
+    #9a3412 14%,
+    #854d0e 28%,
+    #166534 42%,
+    #115e59 56%,
+    #1e40af 70%,
+    #5b21b6 84%,
+    #9d174d 100%
   );
   background-size: 300% 300%;
   background-position: 0% 50%;
-  animation: hero-drift 28s ease-in-out infinite alternate;
+  animation: hero-drift 36s ease-in-out infinite alternate;
 }
 
 @keyframes hero-drift {

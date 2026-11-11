@@ -119,7 +119,10 @@ export function PanelProvider({ children }: { children: ReactNode }) {
     getPanelData,
     getServerSnapshot,
   );
-  const [view, setViewState] = useState<ViewId>("evym");
+  // Al abrir el panel siempre se entra por el resumen GENERAL
+  // (Jarvis primero): el humano entiende todo de un vistazo y luego
+  // baja a cada cuenta. No se persiste la última vista a propósito.
+  const [view, setViewState] = useState<ViewId>("general");
   const [screen, setScreenState] = useState<ScreenId>("hoy");
   const [focusedContentId, setFocusedContentId] = useState<string | null>(
     null,

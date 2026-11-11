@@ -73,12 +73,16 @@ function Screen() {
 }
 
 function Shell() {
-  const { resetAll, screen } = usePanel();
+  const { resetAll, screen, view } = usePanel();
 
   // En Hoy, el degradado animado es el fondo de toda la página (como
   // en la referencia: las tarjetas blancas flotan sobre él). En las
   // demás pantallas la página sigue siendo el papel claro.
   const onGradient = screen === "hoy";
+
+  // La vista general es UNA sola pantalla sin scroll: en ella el
+  // main y el pie van compactos para que todo quepa en el viewport.
+  const onGeneral = screen === "hoy" && view === "general";
 
   const reset = () => {
     if (
@@ -99,16 +103,24 @@ function Shell() {
         )}
       >
         <TopBar />
-        <main className="min-w-0 flex-1 px-4 py-5 sm:px-6 lg:px-8 lg:py-6">
+        <main
+          className={cn(
+            "min-w-0 flex-1 px-4 sm:px-6 lg:px-8",
+            onGeneral ? "py-1.5" : "py-5 lg:py-6",
+          )}
+        >
           <div className="mx-auto w-full max-w-[1280px]">
             <Screen />
           </div>
         </main>
         <footer
           className={cn(
-            // Aire abajo para que el botón fijo de las herramientas de
-            // desarrollo (esquina inferior izquierda) nunca tape el texto.
-            "flex shrink-0 flex-wrap items-center justify-between gap-3 border-t px-4 pt-2.5 pb-16 sm:px-6 lg:px-8",
+            // En la vista general el pie va compacto (sin el aire
+            // inferior de desarrollo) para que la pantalla quepa sin
+            // scroll; en el resto, el aire evita que el botón fijo de
+            // las herramientas de desarrollo tape el texto.
+            "flex shrink-0 flex-wrap items-center justify-between gap-3 border-t px-4 sm:px-6 lg:px-8",
+            onGeneral ? "pt-1.5 pb-2.5" : "pt-2.5 pb-16",
             onGradient
               ? "border-white/20 bg-transparent"
               : "border-line bg-card",
