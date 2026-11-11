@@ -23,6 +23,8 @@ import {
   Progress,
   SectionHeading,
   Select,
+  Stagger,
+  StaggerItem,
 } from "../ui";
 
 function statusTone(status: ContentStatus): "green" | "blue" | "violet" | "neutral" | "amber" {
@@ -212,54 +214,55 @@ export function Content() {
         }
       />
 
-      {/* Weekly progress */}
-      <div className="surface p-5">
-        <div className="flex flex-wrap items-baseline justify-between gap-2">
+      <Stagger>
+        {/* Weekly progress */}
+        <StaggerItem className="surface surface-hover p-5">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="text-base font-semibold tracking-[-0.01em] text-ink">
+              Avance de la semana
+            </h2>
+            <p className="text-sm font-semibold text-ink">
+              {week.published} de {week.total} publicados ({week.pct}%)
+            </p>
+          </div>
+          <Progress value={week.pct} className="mt-3" />
+          <div className="mt-4 flex flex-wrap gap-2">
+            {STATUS_ORDER.map((s) => (
+              <Pill key={s} tone={statusTone(s)}>
+                {STATUS_LABELS[s]}: {counts[s]}
+              </Pill>
+            ))}
+          </div>
+        </StaggerItem>
+
+        {/* Week plan: the 7 day-slots, one Reel per day */}
+        <StaggerItem className="surface surface-hover p-5">
           <h2 className="text-base font-semibold tracking-[-0.01em] text-ink">
-            Avance de la semana
+            Plan de la semana
           </h2>
-          <p className="text-sm font-semibold text-ink">
-            {week.published} de {week.total} publicados ({week.pct}%)
+          <p className="mt-0.5 mb-4 text-sm text-muted-fg">
+            Un Reel por día. Toca un día para editar su Reel.
           </p>
-        </div>
-        <Progress value={week.pct} className="mt-3" />
-        <div className="mt-4 flex flex-wrap gap-2">
-          {STATUS_ORDER.map((s) => (
-            <Pill key={s} tone={statusTone(s)}>
-              {STATUS_LABELS[s]}: {counts[s]}
-            </Pill>
-          ))}
-        </div>
-      </div>
+          <WeekPlan
+            ws={ws}
+            today={today}
+            onSelect={(item) => {
+              setEditing(item);
+              setDialogOpen(true);
+            }}
+          />
+        </StaggerItem>
 
-      {/* Week plan: the 7 day-slots, one Reel per day */}
-      <div className="surface p-5">
-        <h2 className="text-base font-semibold tracking-[-0.01em] text-ink">
-          Plan de la semana
-        </h2>
-        <p className="mt-0.5 mb-4 text-sm text-muted-fg">
-          Un Reel por día. Toca un día para editar su Reel.
-        </p>
-        <WeekPlan
-          ws={ws}
-          today={today}
-          onSelect={(item) => {
-            setEditing(item);
-            setDialogOpen(true);
-          }}
-        />
-      </div>
-
-      {/* Pipeline table */}
-      {sorted.length === 0 ? (
-        <EmptyState
-          title="Pipeline vacío"
-          description="Agrega tu primer Reel y muévelo por los estados: idea, guion, imágenes, edición y publicado. La meta es 7 por semana."
-          action={<Button onClick={openAdd}>Agregar primer Reel</Button>}
-        />
-      ) : (
-        <div className="surface p-5">
-          <div className="overflow-x-auto">
+        {/* Pipeline table */}
+        {sorted.length === 0 ? (
+          <EmptyState
+            title="Pipeline vacío"
+            description="Agrega tu primer Reel y muévelo por los estados: idea, guion, imágenes, edición y publicado. La meta es 7 por semana."
+            action={<Button onClick={openAdd}>Agregar primer Reel</Button>}
+          />
+        ) : (
+          <StaggerItem className="surface p-5">
+            <div className="overflow-x-auto">
             <table className="w-full min-w-[620px] text-left text-sm">
               <thead>
                 <tr className="border-b border-line text-muted-fg">
@@ -332,8 +335,9 @@ export function Content() {
               </tbody>
             </table>
           </div>
-        </div>
-      )}
+          </StaggerItem>
+        )}
+      </Stagger>
 
       <Dialog
         open={dialogOpen}

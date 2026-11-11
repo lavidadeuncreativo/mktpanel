@@ -127,7 +127,7 @@ export function Header() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 shrink-0 border-b border-line bg-white/90 backdrop-blur-xl">
+    <header className="sticky top-0 z-30 shrink-0 border-b border-line bg-page/85 backdrop-blur-xl">
       <div className="flex min-h-14 items-center gap-3 px-4 sm:px-6 lg:px-8">
         <h1 className="text-[17px] font-semibold tracking-[-0.01em] whitespace-nowrap text-ink">
           {SCREEN_TITLES[screen]}
@@ -149,11 +149,11 @@ export function Header() {
               onFocus={() => setOpen(true)}
               placeholder="Buscar Reels, ideas, anécdotas…"
               aria-label="Buscar en el panel"
-              className="h-10 w-full rounded-full border border-line bg-[#f5f5f7] pr-4 pl-10 text-[14px] text-ink placeholder:text-muted-fg/80 focus:border-primary focus:bg-white focus:outline-none"
+              className="h-10 w-full rounded-full border border-line bg-control pr-4 pl-10 text-[14px] text-ink placeholder:text-muted-fg/80 focus:border-primary focus:bg-card focus:outline-none"
             />
           </div>
           {open && query.trim().length >= 2 ? (
-            <div className="absolute inset-x-0 top-12 overflow-hidden rounded-[12px] border border-line bg-white shadow-[0_12px_32px_rgba(0,0,0,0.12)]">
+            <div className="absolute inset-x-0 top-12 overflow-hidden rounded-[12px] border border-line bg-card shadow-[0_12px_32px_rgba(0,0,0,0.5)]">
               {results.length === 0 ? (
                 <p className="px-4 py-3.5 text-sm text-muted-fg">
                   Sin resultados para “{query.trim()}” en este espacio.
@@ -169,7 +169,7 @@ export function Header() {
                           setQuery("");
                           setOpen(false);
                         }}
-                        className="flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-black/[0.03]"
+                        className="flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-white/[0.04]"
                       >
                         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-control text-muted-fg">
                           {hit.icon}
@@ -220,7 +220,7 @@ export function MobileNav() {
   ];
 
   return (
-    <div className="shrink-0 border-b border-line bg-white lg:hidden">
+    <div className="shrink-0 border-b border-line bg-card lg:hidden">
       <div className="scroll-thin flex items-center gap-1 overflow-x-auto px-3 py-2">
         {items.map((item) => {
           const active = screen === item.id;
@@ -233,8 +233,8 @@ export function MobileNav() {
               className={cn(
                 "min-h-9 shrink-0 cursor-pointer rounded-full px-3.5 text-sm font-medium whitespace-nowrap transition-colors",
                 active
-                  ? "bg-ink text-white"
-                  : "bg-[#f5f5f7] text-[#48484a] hover:text-ink",
+                  ? "bg-white text-ink"
+                  : "bg-white/[0.06] text-[#d4d4d8] hover:text-ink",
               )}
             >
               {item.label}
@@ -246,7 +246,7 @@ export function MobileNav() {
           value={activeView}
           onChange={(e) => setView(e.target.value as WorkspaceId)}
           aria-label="Espacio de trabajo"
-          className="h-9 shrink-0 cursor-pointer rounded-full border border-line bg-white px-3 text-sm font-medium text-ink focus:border-primary focus:outline-none"
+          className="h-9 shrink-0 cursor-pointer rounded-full border border-line bg-card px-3 text-sm font-medium text-ink focus:border-primary focus:outline-none"
         >
           <option value="evym">EVYM</option>
           <option value="antojo">Antojo</option>

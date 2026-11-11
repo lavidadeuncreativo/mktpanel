@@ -53,10 +53,10 @@ export function Sidebar() {
   );
 
   return (
-    <aside className="hidden w-60 shrink-0 flex-col border-r border-line bg-white lg:flex">
+    <aside className="hidden w-60 shrink-0 flex-col border-r border-line bg-card lg:flex">
       {/* Marca */}
       <div className="flex items-center gap-2.5 px-5 pt-5 pb-4">
-        <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-ink text-[13px] font-bold text-white">
+        <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-white text-[13px] font-bold text-ink">
           EV
         </span>
         <div className="min-w-0">
@@ -104,13 +104,13 @@ export function Sidebar() {
                     "relative flex min-h-10 w-full cursor-pointer items-center gap-3 rounded-lg px-3 text-[14px] transition-colors duration-150",
                     active
                       ? "font-semibold text-ink"
-                      : "font-medium text-[#48484a] hover:bg-black/[0.03] hover:text-ink",
+                      : "font-medium text-muted-fg hover:bg-white/[0.04] hover:text-ink",
                   )}
                 >
                   {active ? (
                     <motion.span
                       layoutId="sidebar-active"
-                      className="absolute inset-0 rounded-lg bg-black/[0.05]"
+                      className="absolute inset-0 rounded-lg bg-white/[0.06]"
                       transition={{
                         duration: 0.2,
                         ease: [0.32, 0.72, 0, 1],

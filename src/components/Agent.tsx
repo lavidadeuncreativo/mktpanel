@@ -39,7 +39,7 @@ import {
   uid,
 } from "@/lib/store";
 import { useTodayIso } from "./useToday";
-import { Button, Pill } from "./ui";
+import { AnimatedNumber, Button, Pill } from "./ui";
 import { cn } from "./cn";
 
 /* ------------------------------------------------------------------ */
@@ -119,7 +119,7 @@ function ReelWidget() {
   const step = reel ? NEXT_STEP[reel.status] : null;
 
   return (
-    <div className="surface p-5">
+    <div className="surface surface-hover p-5">
       <div className="flex items-center justify-between gap-2">
         <p className="text-[13px] font-semibold text-muted-fg">Reel de hoy</p>
         {reel ? (
@@ -190,7 +190,7 @@ function MetricsWidget() {
 
   if (ws.snapshots.length === 0) {
     return (
-      <div className="surface p-5">
+      <div className="surface surface-hover p-5">
         <p className="text-[15px] font-semibold text-ink">
           Todavía no hay métricas
         </p>
@@ -208,29 +208,29 @@ function MetricsWidget() {
   }
 
   return (
-    <div className="surface p-5">
+    <div className="surface surface-hover p-5">
       <div className="grid grid-cols-2 gap-x-4 gap-y-4">
         <div>
           <p className="text-[22px] leading-none font-semibold tracking-[-0.02em] tabular-nums text-ink">
-            {formatNumber(totals.views)}
+            <AnimatedNumber value={totals.views} format={formatNumber} />
           </p>
           <p className="mt-1 text-[13px] text-muted-fg">Vistas totales</p>
         </div>
         <div>
           <p className="text-[22px] leading-none font-semibold tracking-[-0.02em] tabular-nums text-ink">
-            {formatNumber(totals.followers)}
+            <AnimatedNumber value={totals.followers} format={formatNumber} />
           </p>
           <p className="mt-1 text-[13px] text-muted-fg">Seguidores</p>
         </div>
         <div>
           <p className="text-[22px] leading-none font-semibold tracking-[-0.02em] tabular-nums text-ink">
-            {formatNumber(totals.comments)}
+            <AnimatedNumber value={totals.comments} format={formatNumber} />
           </p>
           <p className="mt-1 text-[13px] text-muted-fg">Comentarios</p>
         </div>
         <div>
           <p className="text-[22px] leading-none font-semibold tracking-[-0.02em] tabular-nums text-ink">
-            {streakCount}
+            <AnimatedNumber value={streakCount} />
           </p>
           <p className="mt-1 text-[13px] text-muted-fg">
             {streakCount === 1 ? "Día de racha" : "Días de racha"}
@@ -260,7 +260,7 @@ function QueueWidget() {
   const upcoming = queue.filter((c) => c.status !== "publicado");
 
   return (
-    <div className="surface overflow-hidden">
+    <div className="surface surface-hover overflow-hidden">
       <div className="border-b border-line px-5 py-3">
         <p className="text-[13px] font-semibold text-muted-fg">
           {upcoming.length === 0
@@ -325,7 +325,7 @@ function IdeaWidget() {
 
   if (!top) {
     return (
-      <div className="surface p-5">
+      <div className="surface surface-hover p-5">
         <p className="text-[15px] font-semibold text-ink">
           El banco de ideas está vacío
         </p>
@@ -362,7 +362,7 @@ function IdeaWidget() {
   };
 
   return (
-    <div className="surface p-5">
+    <div className="surface surface-hover p-5">
       <div className="flex items-start justify-between gap-3">
         <p className="text-[13px] font-semibold text-muted-fg">
           La idea más fuerte
@@ -412,7 +412,7 @@ function TasksWidget() {
   };
 
   return (
-    <div className="surface overflow-hidden">
+    <div className="surface surface-hover overflow-hidden">
       <div className="border-b border-line px-5 py-3">
         <p className="text-[13px] font-semibold text-muted-fg">
           {doneCount} de {ws.tasks.length} completadas
@@ -438,7 +438,7 @@ function TasksWidget() {
                 aria-checked={false}
                 aria-label={`Marcar completada: ${task.label}`}
                 onClick={() => toggle(task.id)}
-                className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-full border-2 border-line bg-white transition-colors duration-150 ease-apple hover:border-primary"
+                className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-full border-2 border-line bg-transparent transition-colors duration-150 ease-apple hover:border-primary"
               >
                 <span className="sr-only">Completar</span>
               </button>
@@ -471,7 +471,7 @@ function GiveawayWidget() {
 
   if (view !== "evym") {
     return (
-      <div className="surface p-5">
+      <div className="surface surface-hover p-5">
         <p className="text-[15px] font-semibold text-ink">
           El giveaway vive en Entre Vivos y Muertos
         </p>
@@ -494,7 +494,7 @@ function GiveawayWidget() {
   }
 
   return (
-    <div className="surface p-5">
+    <div className="surface surface-hover p-5">
       <div className="flex items-center gap-2">
         <Trophy
           className="h-[18px] w-[18px] text-muted-fg"
@@ -691,7 +691,7 @@ export function AgentChat() {
     <div className="mx-auto w-full max-w-[760px]">
       {/* Cabecera del agente */}
       <div className="flex items-center gap-3 pb-5">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink text-white">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-ink">
           <Sparkles className="h-5 w-5" aria-hidden="true" />
         </span>
         <div className="min-w-0">
@@ -715,7 +715,7 @@ export function AgentChat() {
               transition={{ duration: 0.18, ease: EASE }}
               className="flex justify-end"
             >
-              <p className="max-w-[85%] rounded-[20px] rounded-br-md bg-primary px-4 py-2.5 text-[15px] leading-relaxed text-white">
+              <p className="max-w-[85%] rounded-[20px] rounded-br-md bg-primary px-4 py-2.5 text-[15px] leading-relaxed text-[#1c1c1e]">
                 {msg.text}
               </p>
             </motion.div>
@@ -727,7 +727,7 @@ export function AgentChat() {
               transition={{ duration: 0.18, ease: EASE }}
               className="flex gap-3"
             >
-              <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink text-white">
+              <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-ink">
                 <Sparkles className="h-4 w-4" aria-hidden="true" />
               </span>
               <div className="min-w-0 flex-1">
@@ -766,7 +766,7 @@ export function AgentChat() {
             transition={{ duration: 0.15 }}
             className="flex gap-3"
           >
-            <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink text-white">
+            <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-ink">
               <Sparkles className="h-4 w-4" aria-hidden="true" />
             </span>
             <TypingDots />
@@ -788,7 +788,7 @@ export function AgentChat() {
               key={chip}
               type="button"
               onClick={() => send(chip)}
-              className="min-h-9 cursor-pointer rounded-full border border-line bg-white px-3.5 text-sm font-medium text-ink transition-colors duration-150 ease-apple hover:border-primary hover:text-primary"
+              className="min-h-9 cursor-pointer rounded-full border border-line bg-card px-3.5 text-sm font-medium text-ink transition-colors duration-150 ease-apple hover:border-primary hover:text-primary"
             >
               {chip}
             </button>
@@ -803,7 +803,7 @@ export function AgentChat() {
             e.preventDefault();
             send(input);
           }}
-          className="flex items-end gap-2 rounded-[24px] border border-line bg-white p-2 pl-4 shadow-[0_8px_24px_rgba(0,0,0,0.06)]"
+          className="flex items-end gap-2 rounded-[24px] border border-line bg-card p-2 pl-4 shadow-[0_8px_24px_rgba(0,0,0,0.4)]"
         >
           <label htmlFor="agent-input" className="sr-only">
             Escribe al agente del panel
@@ -821,7 +821,7 @@ export function AgentChat() {
             type="submit"
             disabled={!input.trim() || typing}
             aria-label="Enviar"
-            className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-primary text-white transition-colors duration-150 ease-apple hover:bg-[#0077ed] disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-primary text-[#1c1c1e] transition-colors duration-150 ease-apple hover:bg-[#ffe14d] disabled:cursor-not-allowed disabled:opacity-40"
           >
             <ArrowUp className="h-5 w-5" aria-hidden="true" />
           </button>

@@ -439,7 +439,7 @@ export function Connections() {
                           "flex w-full cursor-pointer items-center gap-3 rounded-[12px] border px-4 py-3 text-left transition-colors",
                           active
                             ? "border-primary bg-primary-soft"
-                            : "border-line bg-white hover:bg-black/[0.02]",
+                            : "border-line bg-card hover:bg-white/[0.03]",
                         )}
                       >
                         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#1877f2] text-sm font-bold text-white">
@@ -480,7 +480,7 @@ export function Connections() {
                 "rounded-[12px] border p-4 text-sm",
                 syncReport.failures.length > 0
                   ? "border-amber/40 bg-amber-soft"
-                  : "border-line bg-[#f5f5f7]",
+                  : "border-line bg-card",
               )}
             >
               <p className="font-semibold text-ink">

@@ -1,33 +1,39 @@
 @import "tailwindcss";
 
 @theme {
-  /* Apple Human Interface tokens */
-  --color-ink: #1d1d1f;
-  --color-page: #f5f5f7;
-  --color-card: #ffffff;
-  --color-line: #d2d2d7;
-  --color-control: #e8e8ed;
-  --color-muted: #f5f5f7;
-  --color-muted-fg: #6e6e73;
+  /* Dark Metricool-like tokens: near-black page, dark raised surfaces,
+     hairlines in low-opacity white, muted secondary text. */
+  --color-page: #0a0a0c;
+  --color-card: #141419;
+  --color-line: rgb(255 255 255 / 0.09);
+  --color-control: #1f1f25;
+  --color-muted: #1a1a20;
+  --color-muted-fg: #a1a1aa;
 
-  /* One accent: Apple blue. Everything else is ink, grey, or a soft tint. */
-  --color-primary: #0071e3;
-  --color-primary-soft: #e8f2fe;
-  --color-primary-text: #0066cc;
+  /* Primary text on dark: near-white, not pure white (softer on the eyes). */
+  --color-ink: #f4f4f5;
 
-  /* Semantic tints (fills are soft, text is dark enough for 4.5:1) */
-  --color-accent: #34c759;
-  --color-accent-soft: #e4f8e9;
-  --color-accent-text: #1e7f34;
-  --color-danger: #ff3b30;
-  --color-danger-soft: #ffe9e7;
-  --color-danger-text: #d70015;
-  --color-amber: #ff9500;
-  --color-amber-soft: #fff3e0;
-  --color-amber-text: #c93400;
-  --color-violet: #af52de;
-  --color-violet-soft: #f3e8fb;
-  --color-violet-text: #7a3db5;
+  /* One warm accent: the yellow CTA energy of the reference. Primary
+     actions are yellow with near-black text; everything else is ink,
+     grey, or a soft tint. */
+  --color-primary: #ffd60a;
+  --color-primary-soft: rgb(255 214 10 / 0.12);
+  --color-primary-text: #ffd60a;
+
+  /* Semantic tints, Apple dark-mode palette: soft fills, light text,
+     readable on dark (4.5:1 or better against the card). */
+  --color-accent: #30d158;
+  --color-accent-soft: rgb(48 209 88 / 0.14);
+  --color-accent-text: #30d158;
+  --color-danger: #ff453a;
+  --color-danger-soft: rgb(255 69 58 / 0.13);
+  --color-danger-text: #ff6961;
+  --color-amber: #ff9f0a;
+  --color-amber-soft: rgb(255 159 10 / 0.13);
+  --color-amber-text: #ffb340;
+  --color-violet: #bf5af2;
+  --color-violet-soft: rgb(191 90 242 / 0.14);
+  --color-violet-text: #d18cf7;
 
   /* System stack: the closest thing to SF Pro on every platform */
   --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text",
@@ -36,6 +42,10 @@
 
   /* Apple's standard spring-ish easing */
   --ease-apple: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+:root {
+  color-scheme: dark;
 }
 
 html {
@@ -58,25 +68,41 @@ h2 {
   letter-spacing: -0.02em;
 }
 
-/* Visible keyboard focus, always */
+/* Visible keyboard focus, always — yellow ring reads on dark */
 :focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
   border-radius: 6px;
 }
 
-/* Frosted glass: translucent white over the light page */
+::selection {
+  background: rgb(255 214 10 / 0.28);
+  color: var(--color-ink);
+}
+
+/* Frosted glass: translucent dark card over the near-black page */
 @layer components {
   .glass {
-    @apply border-line/70 bg-white/70 backdrop-blur-xl;
+    @apply border-line/70 bg-card/70 backdrop-blur-xl;
   }
-  /* La superficie estándar del dashboard: blanca sólida y borde fino a
-     plena opacidad. El borde —no la sombra— define la tarjeta: una
+  /* La superficie estándar del dashboard: oscura y sólida, borde fino
+     a plena opacidad. El borde —no la sombra— define la tarjeta: una
      sombra suave idéntica bajo cada tarjeta es la señal del kit SaaS
      genérico. La sombra queda solo donde hay elevación real
      (desplegables, diálogos). */
   .surface {
-    @apply rounded-[12px] border border-line bg-white;
+    @apply rounded-[12px] border border-line bg-card;
+  }
+  /* Elevación al pasar el cursor, solo en tarjetas de contenido:
+     sube 2px y el borde se aclara. Sutil, 200 ms. */
+  .surface-hover {
+    transition:
+      transform 200ms var(--ease-apple),
+      border-color 200ms var(--ease-apple);
+  }
+  .surface-hover:hover {
+    transform: translateY(-2px);
+    border-color: rgb(255 255 255 / 0.18);
   }
 }
 
@@ -116,13 +142,13 @@ h2 {
 /* Thin, quiet scrollbars for horizontal strips */
 .scroll-thin {
   scrollbar-width: thin;
-  scrollbar-color: #c7c7cc transparent;
+  scrollbar-color: rgb(255 255 255 / 0.18) transparent;
 }
 .scroll-thin::-webkit-scrollbar {
   height: 6px;
   width: 6px;
 }
 .scroll-thin::-webkit-scrollbar-thumb {
-  background: #c7c7cc;
+  background: rgb(255 255 255 / 0.18);
   border-radius: 999px;
 }

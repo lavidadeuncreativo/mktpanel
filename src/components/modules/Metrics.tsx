@@ -12,7 +12,7 @@ import {
 import { formatDateShort, formatDeltaPct, formatNumber, todayIso, uid } from "@/lib/store";
 import { ViewsBars, FollowersArea } from "../charts";
 import { CsvImport } from "../CsvImport";
-import { Button, Dialog, EmptyState, Field, Input, Pill, SectionHeading, Select } from "../ui";
+import { AnimatedNumber, Button, Dialog, EmptyState, Field, Input, Pill, SectionHeading, Select, Stagger, StaggerItem } from "../ui";
 
 const NETWORKS: Network[] = ["facebook", "instagram", "tiktok", "youtube"];
 
@@ -192,43 +192,46 @@ export function Metrics() {
           title="Métricas"
           description="Resumen por espacio. Entra a un espacio para registrar capturas."
         />
-        <div className="grid gap-4 md:grid-cols-3">
-          {totals.map((id) => {
-            const ws = data[id];
-            const latest = latestByNetwork(ws.snapshots);
-            const followers = Object.values(latest).reduce(
-              (s, snap) => s + (snap?.followers ?? 0),
-              0,
-            );
-            const views = Object.values(latest).reduce(
-              (s, snap) => s + (snap?.views ?? 0),
-              0,
-            );
-            const name =
-              id === "evym"
-                ? "Entre Vivos y Muertos"
-                : id === "antojo"
-                  ? "Antojo"
-                  : "Perfil personal";
-            return (
-              <div
-                key={id}
-                className="surface p-5"
-              >
-                <h3 className="text-base font-semibold tracking-[-0.01em] text-ink">
-                  {name}
-                </h3>
-                <p className="mt-3 text-[28px] leading-none font-semibold tracking-[-0.02em] text-ink">
-                  {formatNumber(views)}
-                </p>
-                <p className="mt-1 text-sm text-muted-fg">vistas en total</p>
-                <p className="mt-2 text-sm text-muted-fg">
-                  {formatNumber(followers)} seguidores
-                </p>
-              </div>
-            );
-          })}
-        </div>
+        <Stagger>
+          <div className="grid gap-4 md:grid-cols-3">
+            {totals.map((id) => {
+              const ws = data[id];
+              const latest = latestByNetwork(ws.snapshots);
+              const followers = Object.values(latest).reduce(
+                (s, snap) => s + (snap?.followers ?? 0),
+                0,
+              );
+              const views = Object.values(latest).reduce(
+                (s, snap) => s + (snap?.views ?? 0),
+                0,
+              );
+              const name =
+                id === "evym"
+                  ? "Entre Vivos y Muertos"
+                  : id === "antojo"
+                    ? "Antojo"
+                    : "Perfil personal";
+              return (
+                <StaggerItem
+                  key={id}
+                  className="surface surface-hover p-5"
+                >
+                  <h3 className="text-base font-semibold tracking-[-0.01em] text-ink">
+                    {name}
+                  </h3>
+                  <p className="mt-3 text-[28px] leading-none font-semibold tracking-[-0.02em] text-ink">
+                    <AnimatedNumber value={views} format={formatNumber} />
+                  </p>
+                  <p className="mt-1 text-sm text-muted-fg">vistas en total</p>
+                  <p className="mt-2 text-sm text-muted-fg">
+                    <AnimatedNumber value={followers} format={formatNumber} />{" "}
+                    seguidores
+                  </p>
+                </StaggerItem>
+              );
+            })}
+          </div>
+        </Stagger>
         <p className="text-sm text-muted-fg">
           Usa el selector de arriba para entrar a un espacio y registrar sus
           capturas.
@@ -282,102 +285,104 @@ export function Metrics() {
           }
         />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
-          {(Object.keys(latest) as Network[]).map((net) => {
-            const s = latest[net];
-            const p = previous[net];
-            if (!s) return null;
-            const fDelta = p ? formatDeltaPct(s.followers, p.followers) : null;
-            const vDelta = p ? formatDeltaPct(s.views, p.views) : null;
-            return (
-              <div key={net} className="surface p-5">
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="text-base font-semibold tracking-[-0.01em] text-ink">
-                    {NETWORK_LABELS[net]}
-                  </h3>
-                  <span className="text-xs text-muted-fg">
-                    {formatDateShort(s.date)}
-                  </span>
-                </div>
-                <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3">
-                  <div>
-                    <p className="text-2xl leading-none font-semibold tracking-[-0.02em] text-ink">
-                      {formatNumber(s.followers)}
-                    </p>
-                    <p className="mt-1 flex items-center gap-2 text-sm text-muted-fg">
-                      Seguidores
-                      {fDelta ? (
-                        <Pill tone={s.followers >= (p?.followers ?? 0) ? "green" : "red"}>
-                          {s.followers >= (p?.followers ?? 0) ? (
-                            <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
-                          ) : (
-                            <ArrowDownRight className="h-3.5 w-3.5" aria-hidden="true" />
-                          )}
-                          {fDelta}
-                        </Pill>
-                      ) : (
-                        <Pill tone="neutral">Línea base</Pill>
-                      )}
-                    </p>
+        <Stagger>
+          <div className="grid gap-4 md:grid-cols-2">
+            {(Object.keys(latest) as Network[]).map((net) => {
+              const s = latest[net];
+              const p = previous[net];
+              if (!s) return null;
+              const fDelta = p ? formatDeltaPct(s.followers, p.followers) : null;
+              const vDelta = p ? formatDeltaPct(s.views, p.views) : null;
+              return (
+                <StaggerItem key={net} className="surface surface-hover p-5">
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="text-base font-semibold tracking-[-0.01em] text-ink">
+                      {NETWORK_LABELS[net]}
+                    </h3>
+                    <span className="text-xs text-muted-fg">
+                      {formatDateShort(s.date)}
+                    </span>
                   </div>
-                  <div>
-                    <p className="text-2xl leading-none font-semibold tracking-[-0.02em] text-ink">
-                      {formatNumber(s.views)}
-                    </p>
-                    <p className="mt-1 flex items-center gap-2 text-sm text-muted-fg">
-                      Vistas
-                      {vDelta ? (
-                        <Pill tone={s.views >= (p?.views ?? 0) ? "green" : "red"}>
-                          {s.views >= (p?.views ?? 0) ? (
-                            <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
-                          ) : (
-                            <ArrowDownRight className="h-3.5 w-3.5" aria-hidden="true" />
-                          )}
-                          {vDelta}
-                        </Pill>
-                      ) : (
-                        <Pill tone="neutral">Línea base</Pill>
-                      )}
-                    </p>
+                  <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3">
+                    <div>
+                      <p className="text-2xl leading-none font-semibold tracking-[-0.02em] text-ink">
+                        <AnimatedNumber value={s.followers} format={formatNumber} />
+                      </p>
+                      <p className="mt-1 flex items-center gap-2 text-sm text-muted-fg">
+                        Seguidores
+                        {fDelta ? (
+                          <Pill tone={s.followers >= (p?.followers ?? 0) ? "green" : "red"}>
+                            {s.followers >= (p?.followers ?? 0) ? (
+                              <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
+                            ) : (
+                              <ArrowDownRight className="h-3.5 w-3.5" aria-hidden="true" />
+                            )}
+                            {fDelta}
+                          </Pill>
+                        ) : (
+                          <Pill tone="neutral">Línea base</Pill>
+                        )}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-2xl leading-none font-semibold tracking-[-0.02em] text-ink">
+                        <AnimatedNumber value={s.views} format={formatNumber} />
+                      </p>
+                      <p className="mt-1 flex items-center gap-2 text-sm text-muted-fg">
+                        Vistas
+                        {vDelta ? (
+                          <Pill tone={s.views >= (p?.views ?? 0) ? "green" : "red"}>
+                            {s.views >= (p?.views ?? 0) ? (
+                              <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
+                            ) : (
+                              <ArrowDownRight className="h-3.5 w-3.5" aria-hidden="true" />
+                            )}
+                            {vDelta}
+                          </Pill>
+                        ) : (
+                          <Pill tone="neutral">Línea base</Pill>
+                        )}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-lg font-semibold text-ink">
+                        {s.reactions !== null
+                          ? <AnimatedNumber value={s.reactions} format={formatNumber} />
+                          : "Sin datos"}
+                      </p>
+                      <p className="text-sm text-muted-fg">Reacciones</p>
+                    </div>
+                    <div>
+                      <p className="text-lg font-semibold text-ink">
+                        {s.comments !== null
+                          ? <AnimatedNumber value={s.comments} format={formatNumber} />
+                          : "Sin datos"}
+                      </p>
+                      <p className="text-sm text-muted-fg">Comentarios</p>
+                    </div>
+                    <div>
+                      <p className="text-lg font-semibold text-ink">
+                        {s.shares !== null
+                          ? <AnimatedNumber value={s.shares} format={formatNumber} />
+                          : "Sin datos"}
+                      </p>
+                      <p className="text-sm text-muted-fg">Compartidos</p>
+                    </div>
+                    <div>
+                      <p className="text-lg font-semibold text-ink">
+                        {s.interactions !== null
+                          ? <AnimatedNumber value={s.interactions} format={formatNumber} />
+                          : "Sin datos"}
+                      </p>
+                      <p className="text-sm text-muted-fg">Interacciones</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-lg font-semibold text-ink">
-                      {s.reactions !== null
-                        ? formatNumber(s.reactions)
-                        : "Sin datos"}
-                    </p>
-                    <p className="text-sm text-muted-fg">Reacciones</p>
-                  </div>
-                  <div>
-                    <p className="text-lg font-semibold text-ink">
-                      {s.comments !== null
-                        ? formatNumber(s.comments)
-                        : "Sin datos"}
-                    </p>
-                    <p className="text-sm text-muted-fg">Comentarios</p>
-                  </div>
-                  <div>
-                    <p className="text-lg font-semibold text-ink">
-                      {s.shares !== null
-                        ? formatNumber(s.shares)
-                        : "Sin datos"}
-                    </p>
-                    <p className="text-sm text-muted-fg">Compartidos</p>
-                  </div>
-                  <div>
-                    <p className="text-lg font-semibold text-ink">
-                      {s.interactions !== null
-                        ? formatNumber(s.interactions)
-                        : "Sin datos"}
-                    </p>
-                    <p className="text-sm text-muted-fg">Interacciones</p>
-                  </div>
-                </div>
-                <p className="mt-3 text-xs text-muted-fg">{s.period}</p>
-              </div>
-            );
-          })}
-        </div>
+                  <p className="mt-3 text-xs text-muted-fg">{s.period}</p>
+                </StaggerItem>
+              );
+            })}
+          </div>
+        </Stagger>
       )}
 
       {/* Views per capture */}

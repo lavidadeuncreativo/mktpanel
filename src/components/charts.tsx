@@ -17,25 +17,30 @@ import {
 import type { MetricSnapshot, Network } from "@/lib/types";
 import { formatDateShort, formatNumber } from "@/lib/store";
 
-/** One quiet color per network; Apple blue leads. */
+/** One quiet color per network, tuned to read on near-black. */
 export const NETWORK_COLORS: Record<Network, string> = {
-  facebook: "#0071e3",
-  instagram: "#af52de",
-  tiktok: "#1d1d1f",
-  youtube: "#ff3b30",
+  facebook: "#5b9dff",
+  instagram: "#e879f9",
+  tiktok: "#f4f4f5",
+  youtube: "#ff453a",
 };
 
 const SERIES_COLORS = NETWORK_COLORS;
 
-const GRID_STROKE = "#e8e8ed";
-const TICK_FILL = "#6e6e73";
+const GRID_STROKE = "rgba(255,255,255,0.08)";
+const TICK_FILL = "#8e8e93";
 
 const TOOLTIP_STYLE = {
+  backgroundColor: "#1c1c1f",
   borderRadius: 10,
-  border: "1px solid #d2d2d7",
-  boxShadow: "0 8px 24px rgba(16,24,40,0.12)",
+  border: "1px solid rgba(255,255,255,0.12)",
+  boxShadow: "0 12px 32px rgba(0,0,0,0.5)",
   fontSize: 13,
+  color: "#f4f4f5",
 } as const;
+
+const TOOLTIP_LABEL_STYLE = { color: "#f4f4f5" } as const;
+const TOOLTIP_ITEM_STYLE = { color: "#f4f4f5" } as const;
 
 /** Followers over time, one series per network. Real captures only. */
 export function FollowersArea({
@@ -92,6 +97,8 @@ export function FollowersArea({
             ]}
             labelFormatter={(label) => formatDateShort(String(label))}
             contentStyle={TOOLTIP_STYLE}
+            labelStyle={TOOLTIP_LABEL_STYLE}
+            itemStyle={TOOLTIP_ITEM_STYLE}
           />
           {networks.map((net) => (
             <Area
@@ -105,6 +112,7 @@ export function FollowersArea({
               dot={{ r: 4, fill: SERIES_COLORS[net], strokeWidth: 0 }}
               activeDot={{ r: 5 }}
               connectNulls
+              animationDuration={600}
             />
           ))}
         </AreaChart>
@@ -128,6 +136,8 @@ export function NetworkDonut({
           <Tooltip
             formatter={(value, name) => [formatNumber(Number(value)), name]}
             contentStyle={TOOLTIP_STYLE}
+            labelStyle={TOOLTIP_LABEL_STYLE}
+            itemStyle={TOOLTIP_ITEM_STYLE}
           />
           <Pie
             data={data}
@@ -136,8 +146,9 @@ export function NetworkDonut({
             innerRadius="62%"
             outerRadius="92%"
             paddingAngle={2}
-            stroke="#ffffff"
+            stroke="#141419"
             strokeWidth={2}
+            animationDuration={600}
           >
             {data.map((s) => (
               <Cell key={s.network} fill={SERIES_COLORS[s.network]} />
@@ -190,8 +201,15 @@ export function ViewsBars({
           <Tooltip
             formatter={(value) => [formatNumber(Number(value)), "Vistas"]}
             contentStyle={TOOLTIP_STYLE}
+            labelStyle={TOOLTIP_LABEL_STYLE}
+            itemStyle={TOOLTIP_ITEM_STYLE}
           />
-          <Bar dataKey="views" fill="#0071e3" radius={[4, 4, 0, 0]} />
+          <Bar
+            dataKey="views"
+            fill="#ffd60a"
+            radius={[4, 4, 0, 0]}
+            animationDuration={600}
+          />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -220,7 +238,8 @@ export function Sparkline({
             strokeWidth={2}
             fill="none"
             dot={false}
-            isAnimationActive={false}
+            isAnimationActive
+            animationDuration={500}
           />
         </AreaChart>
       </ResponsiveContainer>
@@ -287,6 +306,8 @@ export function ViewsLine({
             ]}
             labelFormatter={(label) => formatDateShort(String(label))}
             contentStyle={TOOLTIP_STYLE}
+            labelStyle={TOOLTIP_LABEL_STYLE}
+            itemStyle={TOOLTIP_ITEM_STYLE}
           />
           {networks.map((net) => (
             <Area
@@ -300,6 +321,7 @@ export function ViewsLine({
               dot={{ r: 3.5, fill: SERIES_COLORS[net], strokeWidth: 0 }}
               activeDot={{ r: 5 }}
               connectNulls
+              animationDuration={600}
             />
           ))}
         </AreaChart>
