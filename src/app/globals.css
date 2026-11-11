@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #0f172a;
+  --color-page: #f8fafc;
+  --color-card: #ffffff;
+  --color-line: #e4ecfc;
+  --color-primary: #2563eb;
+  --color-primary-soft: #dbeafe;
+  --color-accent: #059669;
+  --color-accent-soft: #d1fae5;
+  --color-teal-accent: #0d9488;
+  --color-teal-soft: #ccfbf1;
+  --color-danger: #dc2626;
+  --color-danger-soft: #fee2e2;
+  --color-amber: #d97706;
+  --color-amber-soft: #fef3c7;
+  --color-muted: #f1f5fd;
+  --color-muted-fg: #475569;
+
+  --font-display: "Lexend", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  background-color: var(--color-page);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Visible keyboard focus, always */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* One quiet entrance: a single fade for the shell, nothing per-card */
+@keyframes shell-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.shell-in {
+  animation: shell-in 240ms ease-out both;
+}
+
+/* Respect reduced motion: no animation at all */
+@media (prefers-reduced-motion: reduce) {
+  .shell-in {
+    animation: none;
+  }
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* Thin, quiet scrollbars for horizontal strips */
+.scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+.scroll-thin::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.scroll-thin::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
